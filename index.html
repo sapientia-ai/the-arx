@@ -942,7 +942,7 @@ function tracker() {
   const ul = $('trackList'), qd = QUESTS[S.q];
   let html;
   if (!qd) html = '<li><b>Light the city</b><span>Restore ruins and file your field reports. ' + NOTES.filter(n => ruinState(n) === 'ruin').length + ' houses still stand in ruins.</span></li>';
-  else if (S.qState === 'locked') html = '<li><b>Meet the Great Owl</b><span>The Owl waits by the sundial in the middle of the plaza.</span></li>';
+  else if (S.qState === 'locked') html = '<li><b>Meet the Great Owl</b><span>The Owl waits by the City Center in the middle of the plaza.</span></li>';
   else if (S.qState === 'ready') html = '<li><b>' + escapeHtml(qd.name) + '</b><span>Done. Return to the Great Owl in the Sacred Center.</span></li>';
   else html = '<li><b>' + escapeHtml(qd.name) + '</b><span>' + escapeHtml(qd.step()) + '</span></li>';
   ul.innerHTML = html;
@@ -1396,7 +1396,7 @@ function startGame(fresh) {
   $('title').hidden = true; $('hud').hidden = false; $('tracker').hidden = false;
   if (coarse) document.body.classList.add('touch');
   mode = 'play'; nearEnt = undefined; updatePrompt();
-  if (fresh) setTimeout(() => toast('Welcome to Sapientia Arx. The Great Owl waits by the sundial.', true), 300);
+  if (fresh) setTimeout(() => toast('Welcome to Sapientia Arx. The Great Owl waits by the City Center.', true), 300);
 }
 let newArm = false;
 $('tStart').addEventListener('click', () => startGame(!S.started));
