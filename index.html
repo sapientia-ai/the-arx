@@ -1,0 +1,1431 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Arx Living Library: walk Sapientia Arx as a pixel-art city where every note is a citizen and every link a golden thread.">
+<meta property="og:title" content="Arx Living Library">
+<meta property="og:description" content="Every note is a citizen. Every link is a golden thread.">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}
+.home-link{font-family:var(--display);font-size:13px;color:var(--muted)}.home-link:hover{color:var(--saffron)}</style>
+</head>
+<body>
+<title>Arx Living Library</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;600;700&family=Alegreya:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+/* Layout: a full-bleed pixel city at dusk; parchment panels in lapis frames float over it. Single dusk look by choice. */
+:root {
+  --night: #141833;
+  --panel: #1f2550;
+  --panel-2: #2b3368;
+  --line: #c99a5b;
+  --ink: #efe6d2;
+  --muted: #aaa6c8;
+  --saffron: #f0b13a;
+  --verdigris: #5fa596;
+  --good: #86c98f;
+  --bad: #e2715f;
+  --display: "Pixelify Sans", "Courier New", monospace;
+  --body: "Alegreya", Georgia, "Times New Roman", serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+[hidden] { display: none !important; }
+body { background: var(--night); color: var(--ink); font-family: var(--body); font-size: 16px; overflow: hidden; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--saffron); outline-offset: 2px; }
+
+#game { position: relative; width: 100%; height: 100%; min-height: 420px; overflow: hidden; background: var(--night); }
+#view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+
+.panel {
+  background: var(--panel);
+  border: 2px solid var(--line);
+  box-shadow: 0 0 0 2px var(--night), inset 0 0 0 2px var(--panel-2), 0 10px 30px rgba(0,0,0,.45);
+}
+.btn {
+  font-family: var(--display); font-size: 15px; letter-spacing: .02em;
+  background: var(--panel-2); border: 2px solid var(--line); padding: 7px 14px; min-height: 40px;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,.25);
+}
+.btn:hover { background: #36407c; }
+.btn:active { transform: translateY(1px); box-shadow: none; }
+.btn.primary { background: var(--saffron); color: #241a08; border-color: #ffd47a; }
+.btn.primary:hover { background: #ffc451; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn.small { font-size: 13px; min-height: 32px; padding: 3px 10px; }
+.badge { font-family: var(--display); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; padding: 2px 7px; border: 1px solid currentColor; display: inline-block; }
+.t-Evidence { color: #8fc4ff; } .t-Logic { color: #c9a6ff; } .t-Precedent { color: var(--saffron); }
+
+/* HUD */
+#hud { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; max-width: calc(100% - 32px); pointer-events: none; }
+#hud > * { pointer-events: auto; }
+.hud-card { padding: 8px 12px 9px; min-width: 230px; }
+.place { font-family: var(--display); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--saffron); margin-bottom: 2px; }
+.rank { font-family: var(--display); font-size: 17px; display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.rank small { font-size: 12px; color: var(--muted); font-family: var(--display); }
+.bar { height: 8px; background: #0e1129; border: 1px solid #3b437c; margin: 6px 0; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--saffron); transition: width .4s; }
+.stats { display: flex; gap: 14px; flex-wrap: wrap; font-family: var(--display); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.stats b { color: var(--ink); font-weight: 600; }
+#tracker { position: absolute; top: calc(12px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: min(300px, calc(100% - 32px)); padding: 10px 12px; font-size: 15px; }
+#tracker h3 { font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: var(--saffron); margin: 0 0 6px; }
+#tracker ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+#tracker li { line-height: 1.3; }
+#tracker li b { font-family: var(--display); font-weight: 600; font-size: 14px; display: block; }
+#tracker li span { color: var(--muted); font-size: 14px; }
+@media (max-width: 720px) {
+  #tracker { top: auto; bottom: calc(150px + env(safe-area-inset-bottom, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: auto; left: max(16px, env(safe-area-inset-left, 0px)); padding: 6px 10px; }
+  #tracker li span { display: none; }
+  #tracker h3 { display: none; }
+  .hud-card { min-width: 0; }
+}
+
+#prompt { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(20px + env(safe-area-inset-bottom, 0px)); max-width: calc(100% - 32px); }
+#prompt .btn { font-size: 15px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#prompt kbd { font-family: var(--display); background: var(--saffron); color: #241a08; padding: 0 6px; margin-right: 6px; }
+
+#toasts { position: absolute; left: 50%; transform: translateX(-50%); top: calc(84px + env(safe-area-inset-top, 0px)); display: grid; gap: 6px; justify-items: center; pointer-events: none; width: min(560px, calc(100% - 32px)); }
+.toast { font-family: var(--display); font-size: 15px; padding: 7px 14px; text-align: center; animation: toastIn .25s ease-out; }
+.toast.gold { border-color: var(--saffron); color: #ffe2a3; }
+@keyframes toastIn { from { transform: translateY(-6px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Dialogue */
+#dlg { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: min(780px, calc(100% - 32px)); display: flex; gap: 14px; padding: 14px 16px; }
+#dlgPortrait { width: 72px; height: 96px; image-rendering: pixelated; flex: none; background: #151a3c; border: 2px solid var(--panel-2); }
+.dlg-body { min-width: 0; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.dlg-name { font-family: var(--display); font-size: 18px; color: var(--saffron); display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.dlg-name small { color: var(--muted); font-size: 13px; letter-spacing: .06em; }
+#dlgText { margin: 0; font-size: 18px; line-height: 1.45; min-height: 3em; max-height: 9.5em; overflow-y: auto; cursor: pointer; }
+#dlgChoices { display: flex; flex-wrap: wrap; gap: 8px; }
+#dlgChoices .btn { font-size: 14px; text-align: left; }
+#dlgAsk { display: flex; gap: 8px; }
+#dlgAsk input, .field { flex: 1; min-width: 0; background: #11153a; border: 2px solid var(--panel-2); padding: 8px 10px; font-size: 16px; }
+.dlg-hint { font-family: var(--display); font-size: 12px; color: var(--muted); }
+@media (max-width: 520px) { #dlgPortrait { width: 48px; height: 64px; } #dlgText { font-size: 16px; } }
+
+/* Overlays */
+.overlay { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; background: rgba(10,12,30,.62); padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); overflow-y: auto; }
+.sheet { width: min(800px, 100%); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; margin: auto 0; flex: none; }
+.sheet h2 { font-family: var(--display); font-weight: 600; font-size: 24px; margin: 0; color: var(--saffron); text-wrap: balance; }
+.sheet .sub { margin: 0; color: var(--muted); font-size: 16px; }
+.actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+
+/* Title */
+#title { background: radial-gradient(ellipse at 50% 40%, rgba(20,24,51,.35), rgba(10,12,30,.9)); }
+.title-card { margin: auto 0; text-align: center; width: min(580px, 100%); padding: 28px 24px 22px; display: grid; gap: 10px; justify-items: center; }
+.eyebrow { font-family: var(--display); font-size: 13px; letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+.title-card h1 { font-family: var(--display); font-weight: 700; font-size: clamp(64px, 14vw, 112px); line-height: .9; margin: 4px 0 0; color: var(--saffron); text-shadow: 4px 4px 0 #6b3d14, 8px 8px 0 rgba(0,0,0,.35); letter-spacing: .04em; }
+.title-card .wing { font-family: var(--display); font-size: 20px; letter-spacing: .12em; }
+.title-card p { margin: 0; font-size: 18px; line-height: 1.45; max-width: 46ch; text-wrap: balance; }
+.title-card .census { font-family: var(--display); font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.title-card .controls { font-family: var(--display); font-size: 13px; color: var(--muted); }
+.title-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+
+/* Research */
+.note-card { border: 2px solid var(--panel-2); padding: 14px; display: grid; gap: 8px; background: #191e47; }
+.note-card h3 { margin: 0; font-family: var(--display); font-weight: 600; font-size: 19px; }
+.note-card p { margin: 0; line-height: 1.45; }
+.note-card ul { margin: 0; padding-left: 20px; line-height: 1.45; }
+.row { display: flex; gap: 8px; }
+label.lbl { font-family: var(--display); font-size: 13px; color: var(--muted); letter-spacing: .06em; }
+#rStatus { margin: 0; color: var(--muted); font-style: italic; min-height: 1.4em; }
+
+/* Debate */
+.dbt-top { display: grid; grid-template-columns: 1fr auto 1fr; gap: 12px; align-items: center; }
+.side { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.side.you { flex-direction: row-reverse; text-align: right; }
+.side canvas { width: 48px; height: 64px; image-rendering: pixelated; background: #151a3c; border: 2px solid var(--panel-2); flex: none; }
+.side .who { min-width: 0; flex: 1; font-family: var(--display); }
+.side .who small { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.vs { font-family: var(--display); color: var(--muted); font-size: 13px; text-align: center; }
+.bar.comp > i { background: var(--verdigris); }
+.bar.cred > i { background: var(--saffron); }
+.testimony { border-left: 4px solid var(--saffron); padding: 8px 12px; background: #191e47; }
+.testimony p { margin: 6px 0 0; font-size: 18px; line-height: 1.4; font-style: italic; }
+.objection { border-left: 4px solid var(--bad); padding: 6px 12px; background: #191e47; }
+.objection p { margin: 4px 0 0; font-size: 17px; line-height: 1.4; }
+#dbLog { margin: 0; min-height: 2.8em; font-size: 16px; line-height: 1.4; }
+.hand { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 8px; }
+.card { text-align: left; background: #191e47; border: 2px solid var(--panel-2); padding: 10px; display: grid; gap: 4px; align-content: start; min-height: 74px; }
+.card:hover:not(:disabled) { border-color: var(--line); background: #222a5c; }
+.card:disabled { opacity: .35; }
+.card .src { font-family: var(--display); font-size: 12px; color: var(--muted); }
+.card .txt { font-size: 16px; line-height: 1.3; }
+.verdict { text-align: center; display: grid; gap: 10px; justify-items: center; padding: 10px 0; }
+.verdict h3 { font-family: var(--display); font-size: 28px; margin: 0; }
+@media (max-width: 560px) { .dbt-top { grid-template-columns: 1fr 1fr; } .vs { grid-column: 1 / -1; order: -1; } .side .who { font-size: 13px; } }
+
+/* Journal */
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs .btn[aria-selected="true"] { background: var(--saffron); color: #241a08; }
+.jlist { display: grid; gap: 8px; }
+.jitem { border: 2px solid var(--panel-2); padding: 10px 12px; background: #191e47; display: grid; gap: 4px; min-width: 0; }
+.jitem b { font-family: var(--display); font-weight: 600; overflow-wrap: anywhere; }
+.jitem .st { font-family: var(--display); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.jitem .acts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.st.active { color: var(--saffron); } .st.done { color: var(--good); } .st.locked { color: var(--muted); } .st.bad { color: var(--bad); }
+.jitem p { margin: 0; line-height: 1.4; color: var(--muted); overflow-wrap: anywhere; }
+.lamps { font-family: var(--display); letter-spacing: 2px; color: var(--saffron); }
+.lamps i { font-style: normal; color: #4a4658; }
+.atlas { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+#exportText { width: 100%; min-height: 260px; background: #11153a; border: 2px solid var(--panel-2); padding: 10px; font-family: var(--display); font-size: 13px; line-height: 1.45; resize: vertical; }
+
+/* Touch */
+#touch { position: absolute; inset: auto 0 0 0; height: 0; }
+.dpad { position: absolute; left: max(16px, env(safe-area-inset-left, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); width: 132px; height: 132px; display: grid; grid-template: repeat(3, 1fr) / repeat(3, 1fr); gap: 2px; }
+.dpad button, .abtn { background: rgba(31,37,80,.82); border: 2px solid var(--line); font-family: var(--display); font-size: 18px; touch-action: none; }
+.dpad .u { grid-area: 1 / 2; } .dpad .l { grid-area: 2 / 1; } .dpad .r { grid-area: 2 / 3; } .dpad .d { grid-area: 3 / 2; }
+.abtn { position: absolute; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(40px + env(safe-area-inset-bottom, 0px)); width: 64px; height: 64px; border-radius: 50%; color: var(--saffron); }
+body.touch #prompt { bottom: calc(160px + env(safe-area-inset-bottom, 0px)); }
+@media (max-width: 720px) { #toasts { top: calc(150px + env(safe-area-inset-top, 0px)); } }
+@media (prefers-reduced-motion: reduce) { .toast { animation: none; } .bar > i { transition: none; } }
+</style>
+
+<div id="game">
+  <canvas id="view" aria-label="Sapientia Arx as a pixel-art city"></canvas>
+
+  <div id="hud" hidden>
+    <div class="hud-card panel">
+      <div class="place" id="placeName">Sacred Center</div>
+      <div class="rank"><span id="rankName">Novice</span><small id="rankNext"></small></div>
+      <div class="bar" aria-hidden="true"><i id="xpBar"></i></div>
+      <div class="stats"><span>Ink <b id="inkN">3</b></span><span>Lamps <b id="lampN">0</b>/10</span><span>Cards <b id="cardN">0</b></span><span>Satchel <b id="satN">0</b></span></div>
+    </div>
+    <button class="btn panel" id="btnJournal" type="button">Journal (J)</button>
+  </div>
+  <div id="tracker" class="panel" hidden><h3>Quest</h3><ul id="trackList"></ul></div>
+  <div id="prompt" hidden><button class="btn panel" id="promptBtn" type="button"></button></div>
+  <div id="toasts" aria-live="polite"></div>
+
+  <div id="dlg" class="panel" hidden role="dialog" aria-labelledby="dlgName">
+    <canvas id="dlgPortrait" width="12" height="16"></canvas>
+    <div class="dlg-body">
+      <div class="dlg-name"><span id="dlgName"></span><small id="dlgRole"></small></div>
+      <p id="dlgText"></p>
+      <form id="dlgAsk" hidden><input id="dlgAskInput" autocomplete="off" placeholder="Ask this citizen about their note" aria-label="Question for this citizen"><button class="btn" type="submit" id="dlgAskBtn">Ask</button></form>
+      <div id="dlgChoices"></div>
+      <div class="dlg-hint" id="dlgHint">Enter to continue · Esc to leave</div>
+    </div>
+  </div>
+
+  <div id="research" class="overlay" hidden>
+    <div class="sheet panel" role="dialog" aria-labelledby="rTitle">
+      <h2 id="rTitle">Observatory terminal</h2>
+      <p class="sub">Spend 1 Ink to research a question. The answer pitches a tent in the plaza as a visitor waiting for Processing. The Scribe files it to your Inbox with the rest of your satchel.</p>
+      <div class="stats"><span>Ink <b id="rInk"></b></span><span>Free tent spots <b id="rLots"></b></span></div>
+      <form id="rForm" class="row">
+        <input id="rTopic" class="field" autocomplete="off" placeholder="Ask anything, e.g. Why did Rome need a leap day?" aria-label="Research question">
+        <button class="btn primary" id="rGo" type="submit">Research</button>
+      </form>
+      <p id="rStatus"></p>
+      <div id="rOut"></div>
+      <div class="actions"><button class="btn" id="rClose" type="button">Close</button></div>
+    </div>
+  </div>
+
+  <div id="debate" class="overlay" hidden>
+    <div class="sheet panel" role="dialog" aria-label="Cross-examination at the Court of Reason" id="dbSheet"></div>
+  </div>
+
+  <div id="journal" class="overlay" hidden>
+    <div class="sheet panel" role="dialog" aria-labelledby="jTitle">
+      <h2 id="jTitle">Journal</h2>
+      <div class="tabs" role="tablist">
+        <button class="btn" role="tab" data-tab="quests" type="button">Quests</button>
+        <button class="btn" role="tab" data-tab="atlas" type="button">Atlas</button>
+        <button class="btn" role="tab" data-tab="cards" type="button">Cards</button>
+        <button class="btn" role="tab" data-tab="satchel" type="button">Satchel</button>
+      </div>
+      <div id="jSearchRow" class="row" hidden><input id="jSearch" class="field" autocomplete="off" placeholder="Find a citizen by title or tag" aria-label="Search citizens"></div>
+      <div class="jlist" id="jList"></div>
+      <div class="actions"><button class="btn" id="jReset" type="button">New game</button><button class="btn primary" id="jClose" type="button">Close</button></div>
+    </div>
+  </div>
+
+  <div id="exportView" class="overlay" hidden>
+    <div class="sheet panel" role="dialog" aria-labelledby="xTitle">
+      <h2 id="xTitle">Field report</h2>
+      <p class="sub" id="xSub">Copy this text into a new note in 99 - Inbox.</p>
+      <textarea id="exportText" readonly aria-label="Field report text"></textarea>
+      <div class="actions"><button class="btn" id="xCopy" type="button">Copy text</button><button class="btn" id="xFiled" type="button">I've filed it</button><button class="btn primary" id="xClose" type="button">Close</button></div>
+    </div>
+  </div>
+
+  <div id="touch" hidden>
+    <div class="dpad">
+      <button class="u" data-k="up" aria-label="Move up">▲</button>
+      <button class="l" data-k="left" aria-label="Move left">◀</button>
+      <button class="r" data-k="right" aria-label="Move right">▶</button>
+      <button class="d" data-k="down" aria-label="Move down">▼</button>
+    </div>
+    <button class="abtn" id="aBtn" aria-label="Talk or use">A</button>
+  </div>
+
+  <div id="title" class="overlay">
+    <div class="title-card panel">
+      <div class="eyebrow">Sapientia Arx</div>
+      <h1>ARX</h1>
+      <div class="wing">The Living Library</div>
+      <p>Every note in your vault is a citizen. Every link is a golden thread. Walk the districts, meet what you have learned, and rebuild the houses no thread reaches yet.</p>
+      <div class="census" id="census">Reading the city's records…</div>
+      <div class="title-btns">
+        <button class="btn primary" id="tStart" type="button" disabled>Begin</button>
+        <button class="btn" id="tNew" type="button" hidden>New game</button>
+      </div>
+      <a class="home-link" href="https://sapientia.org.in/">Back to sapientia.org.in</a>
+      <div class="controls">Move: WASD or arrows · Talk: E or Space · Journal: J</div>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const T = 16;
+const $ = id => document.getElementById(id);
+
+/* ---------- Vault data ---------- */
+let DATA = null, NOTES = [], BYID = {}, BYPATH = {}, WINGS = [], WBY = {}, WNOTES = {}, ADJ = {};
+const WING_COLORS = { w01: '#7a3f8f', w02: '#3b628c', w03: '#2f7d5b', w04: '#8f3a4f', w05: '#c0473a', w06: '#e07b2c', w08: '#4f86c6',
+  w09: '#4b4370', w10: '#c9a227', w11: '#a15bb8', w12: '#3f7f8a', w13: '#2a4a7a', w26: '#9a6440', w27: '#3a9aa0' };
+const STOP = new Set('about after also among and are because been before being between both but can could does each even from have into its itself just more most much must not only other over same should some such than that their them then there these they this those through under upon very what when where which while who whom why will with within would your'.split(' '));
+function words(s) { return String(s || '').toLowerCase().split(/[^a-z0-9À-ɏ]+/).filter(w => w.length > 3 && !STOP.has(w)); }
+function indexData(d) {
+  DATA = d; NOTES = d.notes; WINGS = d.wings;
+  BYID = {}; BYPATH = {}; WBY = {}; WNOTES = {}; ADJ = {};
+  for (const w of WINGS) { WBY[w.id] = w; WNOTES[w.id] = []; }
+  for (const n of NOTES) {
+    BYID[n.id] = n; BYPATH[n.p] = n; ADJ[n.id] = [];
+    if (WNOTES[n.w]) WNOTES[n.w].push(n);
+    n._t = new Set(words(n.t)); n._g = new Set((n.g || []).map(g => g.toLowerCase())); n._s = new Set(words(n.s));
+  }
+  for (const [a, b] of d.links) { if (ADJ[a] && ADJ[b]) { ADJ[a].push(b); ADJ[b].push(a); } }
+}
+function stem(p) { return p.split('/').pop().replace(/\.md$/i, ''); }
+function wikilink(p) { return '[[' + stem(p) + ']]'; }
+function clip(s, n) { s = String(s || ''); if (s.length <= n) return s; const c = s.slice(0, n).replace(/\s+\S*$/, ''); return c.replace(/[,;:—-]+$/, '') + '…'; }
+function cardType(ty) {
+  if (/concept|theory|theorem|proof|model|synthesis|insight|principle|argument|hypothesis/.test(ty)) return 'Logic';
+  if (/person|event|place|history|figure|work|book|artwork|myth|tradition|state|organization|source/.test(ty)) return 'Precedent';
+  return 'Evidence';
+}
+function cardText(n) { return clip(n.k && n.k.length ? n.k[0] : n.s, 190); }
+
+/* ---------- State ---------- */
+const SAVE_KEY = 'arx-living-library-v2';
+const QUESTS = [
+  { id: 'q1', name: 'First steps', step: () => 'Enter any district through a gate and meet three citizens (' + Math.min(3, Object.keys(S.talked).length) + '/3).', check: () => Object.keys(S.talked).length >= 3, reward: [30, 1] },
+  { id: 'q2', name: 'Restore a ruin', step: () => 'Find a grey house with a ? and propose a kin for it. Ask any custodian to show you one.', check: () => S.proposals.length >= 1, reward: [40, 1] },
+  { id: 'q3', name: 'Follow a golden thread', step: () => 'Ask a citizen to show you a thread that leads into another district, and follow it.', check: () => S.crossed, reward: [40, 1] },
+  { id: 'q4', name: 'The Court of Reason', step: () => 'Collect four cards, then win a cross-examination with the Lawyer (east side of the plaza).', check: () => S.debatesWon >= 1, reward: [60, 2] },
+  { id: 'q5', name: 'File a field report', step: () => 'Take your satchel to the Scribe at the Inbox (west side of the plaza) and file it.', check: () => S.exports >= 1, reward: [50, 2] }
+];
+function freshState() {
+  return { v: 2, scene: 'hub', px: 21.5, py: 18.5, dir: 'up', insight: 0, ink: 3,
+    talked: {}, cards: [], proposals: [], research: [], revisit: [], visited: {},
+    q: 0, qState: 'locked', crossed: false, debatesWon: 0, exports: 0, started: false };
+}
+let S = freshState();
+function load() { try { const raw = localStorage.getItem(SAVE_KEY); if (raw) { const d = JSON.parse(raw); if (d && d.v === 2) return d; } } catch (e) {} return null; }
+function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
+
+/* ---------- Capabilities (optional) ---------- */
+let ai = null, aiDenied = false, dl = null;
+(async () => { try { if (window.claude && window.claude.use) { ai = await window.claude.use('sample'); refreshResearchUI(); } } catch (e) { ai = null; } })();
+(async () => { try { if (window.claude && window.claude.use) dl = await window.claude.use('downloads'); } catch (e) { dl = null; } })();
+function aiOn() { return !!ai && !aiDenied; }
+function aiFail(e) {
+  const c = e && e.code;
+  if (c === 'not_granted' || c === 'sampling_disabled' || c === 'not_declared' || c === 'capability_disabled' || c === 'capability_removed') { aiDenied = true; refreshResearchUI(); return 'Claude is not available in this view.'; }
+  if (c === 'rate_limited') return 'Too many questions at once. Wait a moment and try again.';
+  if (c === 'refused') return 'That question was declined. Try another.';
+  if (c === 'cancelled') return '';
+  return 'The connection dropped. Try again.';
+}
+
+/* ---------- Helpers ---------- */
+function shade(hex, f) {
+  const n = parseInt(hex.slice(1), 16); let r = n >> 16, g = (n >> 8) & 255, b = n & 255;
+  r = Math.max(0, Math.min(255, Math.round(r * f))); g = Math.max(0, Math.min(255, Math.round(g * f))); b = Math.max(0, Math.min(255, Math.round(b * f)));
+  return '#' + ((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1);
+}
+function hash(x, y) { let h = (x * 374761393 + y * 668265263) ^ 0x5bd1e995; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967296; }
+function strHash(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const RANKS = [['Novice', 0], ['Scribe', 60], ['Scholar', 160], ['Sage', 320], ['Polymath', 560]];
+function rankOf(xp) { let i = 0; for (let k = 0; k < RANKS.length; k++) if (xp >= RANKS[k][1]) i = k; return i; }
+function escapeHtml(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); }
+function today() { return new Date().toISOString().slice(0, 10); }
+
+/* ---------- Ruins & lamps ---------- */
+function proposedFor(p) { return S.proposals.some(x => (x.a === p || x.b === p) && (!x.filed || (x.filedOn || '') >= DATA.generated)); }
+function isRuin(n) { return ADJ[n.id].length === 0; }
+function ruinState(n) { if (!isRuin(n)) return null; return proposedFor(n.p) ? 'scaffold' : 'ruin'; }
+function wingRuins(wid) { return WNOTES[wid].filter(n => ruinState(n) === 'ruin'); }
+function wingLit(wid) { const all = WNOTES[wid]; if (!all.length) return 0; return Math.round(10 * (all.length - wingRuins(wid).length) / all.length); }
+function cityLit() { const r = NOTES.filter(n => ruinState(n) === 'ruin').length; return Math.round(10 * (NOTES.length - r) / NOTES.length); }
+function sceneLit() { return SC.id === 'hub' ? cityLit() : wingLit(SC.id); }
+function wingThreads(wid) { const set = new Set(WNOTES[wid].map(n => n.id)); return DATA.links.filter(l => set.has(l[0]) || set.has(l[1])).length; }
+
+/* ---------- Palettes ---------- */
+const HAIR = ['#2a2420', '#3b2a20', '#1c1c1c', '#efe8d8', '#7a4a2a', '#c9a227', '#5a3a2a', '#8e8a96'];
+const SKIN = ['#c98d5e', '#a86f45', '#d4a27a', '#94603a', '#b97a4d', '#e0b08a'];
+const ACC = ['#f0b13a', '#efe8d8', '#e6c25a', '#9ff0d8', '#f6d27a', '#c98fd6'];
+const GREY = { H: '#7d7a86', R: '#8a8794', r: '#6b6875', A: '#9c99a6', S: '#8e7a6c' };
+function notePal(n) {
+  const h = strHash(n.p), base = WING_COLORS[n.w] || '#4f86c6', f = 0.8 + ((h >> 8) % 5) * 0.1;
+  const R = shade(base, f);
+  return { H: HAIR[h % HAIR.length], S: SKIN[(h >> 4) % SKIN.length], R, r: shade(R, .74), A: ACC[(h >> 12) % ACC.length] };
+}
+const OFFICER_PAL = {
+  owl: { H: '#d9c7a0', R: '#6d5a3f', r: '#4f412c', A: '#f0b13a', S: '#c99a6c' },
+  custodian: { H: '#2f6f73', R: '#4c8c7f', r: '#356a60', A: '#e8e0cc', S: '#b97a4d' },
+  lawyer: { H: '#1d1d26', R: '#2a2a38', r: '#1a1a24', A: '#f2efe6', S: '#d4a27a' },
+  scribe: { H: '#d08a2c', R: '#7a3f8f', r: '#5c2f6d', A: '#f0b13a', S: '#a8693f' }
+};
+const PLAYER_PAL = { H: '#3b2a20', R: '#3a5aa8', r: '#2b4382', A: '#f0b13a', S: '#c98d5e' };
+const TENT_PAL = { H: '#efe8d8', R: '#6aa84f', r: '#4d7d38', A: '#f0b13a', S: '#b47f55' };
+
+/* ---------- Scenes ---------- */
+let SC = null;
+const TENT_SPOTS = [[10, 15], [13, 15], [16, 15], [27, 15], [30, 15], [33, 15]];
+function newGrid(w, h, c) { const g = []; for (let y = 0; y < h; y++) g.push(new Array(w).fill(c)); return g; }
+function makeScene(id, MW, MH) {
+  const sc = { id, MW, MH, ground: newGrid(MW, MH, 'G'), solid: newGrid(MW, MH, false), buildings: [], ents: [], lamps: [], labels: [], threads: [] };
+  sc.set = (x, y, c) => { if (x >= 0 && y >= 0 && x < MW && y < MH) sc.ground[y][x] = c; };
+  sc.rect = (x, y, w, h, c) => { for (let j = y; j < y + h; j++) for (let i = x; i < x + w; i++) sc.set(i, j, c); };
+  sc.build = b => { sc.buildings.push(b); for (let j = b.y; j < b.y + b.h; j++) for (let i = b.x; i < b.x + b.w; i++) if (j >= 0 && i >= 0 && j < MH && i < MW) sc.solid[j][i] = true; };
+  return sc;
+}
+function walls(sc) {
+  for (let x = 0; x < sc.MW; x++) { sc.set(x, 0, 'W'); sc.set(x, sc.MH - 1, 'W'); }
+  for (let y = 0; y < sc.MH; y++) { sc.set(0, y, 'W'); sc.set(sc.MW - 1, y, 'W'); }
+}
+function finishSolids(sc) {
+  for (let y = 0; y < sc.MH; y++) for (let x = 0; x < sc.MW; x++) { const c = sc.ground[y][x]; if (c === 'W' || c === 'X' || c === 'T') sc.solid[y][x] = true; }
+}
+function hubGates() {
+  const out = [];
+  WINGS.forEach((w, i) => {
+    const top = i < 7, col = top ? i : i - 7;
+    const x = 2 + col * 6, y = top ? 2 : 19;
+    out.push({ w, x, y, door: { x: x + 2.5, y: top ? 6.6 : 23.6 } });
+  });
+  return out;
+}
+function buildHub() {
+  const sc = makeScene('hub', 44, 30);
+  sc.rect(1, 6, 42, 1, 'P'); sc.rect(1, 23, 42, 1, 'P'); sc.rect(1, 6, 1, 18, 'P'); sc.rect(42, 6, 1, 18, 'P');
+  sc.rect(8, 8, 28, 10, 'Z'); sc.rect(21, 7, 1, 1, 'P'); sc.rect(21, 18, 1, 5, 'P'); sc.rect(2, 14, 6, 1, 'P'); sc.rect(36, 14, 6, 1, 'P');
+  sc.rect(1, 25, 42, 3, 'X');
+  walls(sc);
+  for (const g of hubGates()) {
+    sc.build({ kind: 'gatehouse', x: g.x, y: g.y, w: 5, h: 4, roof: WING_COLORS[g.w.id] || '#4f86c6', name: g.w.name, num: g.w.num, faceDown: g.y < 10 });
+    sc.ents.push({ id: 'gate:' + g.w.id, kind: 'portal', wing: g.w.id, x: g.door.x, y: g.door.y, name: g.w.name });
+  }
+  sc.build({ kind: 'hall', x: 3, y: 10, w: 5, h: 4, roof: '#8a6a43', name: 'Inbox' });
+  sc.build({ kind: 'hall', x: 36, y: 10, w: 5, h: 4, roof: '#4b4370', name: 'Court of Reason' });
+  sc.build({ kind: 'yantra', x: 19, y: 9, w: 5, h: 3, name: 'Samrat Yantra' });
+  sc.ents.push({ id: 'scribe', kind: 'officer', role: 'scribe', x: 5.5, y: 14.6, pal: OFFICER_PAL.scribe, name: 'The Scribe' });
+  sc.ents.push({ id: 'lawyer', kind: 'officer', role: 'lawyer', x: 38.5, y: 14.6, pal: OFFICER_PAL.lawyer, name: 'The Lawyer' });
+  sc.ents.push({ id: 'owl', kind: 'officer', role: 'owl', x: 21.5, y: 16.2, pal: OFFICER_PAL.owl, name: 'The Great Owl' });
+  sc.ents.push({ id: 'terminal', kind: 'terminal', x: 21.5, y: 13.5, name: 'Observatory terminal' });
+  for (const r of S.research) if (!r.filed) { const s = TENT_SPOTS[r.spot]; if (s) sc.ents.push({ id: r.id, kind: 'tent', x: s[0] + .5, y: s[1] + .9, pal: TENT_PAL, name: r.name || 'Visitor', rec: r }); }
+  sc.lamps = [[9, 8], [15, 8], [27, 8], [33, 8], [9, 17], [33, 17], [12, 20], [30, 20], [2, 9], [41, 9]];
+  // threads between gatehouses: the busiest cross-district pairs
+  const gates = hubGates(), door = {}; for (const g of gates) door[g.w.id] = g.door;
+  const pairs = {};
+  for (const [a, b] of DATA.links) { const wa = BYID[a].w, wb = BYID[b].w; if (wa === wb) continue; const k = wa < wb ? wa + '|' + wb : wb + '|' + wa; pairs[k] = (pairs[k] || 0) + 1; }
+  const top = Object.entries(pairs).sort((x, y) => y[1] - x[1]).slice(0, 16);
+  const max = top.length ? top[0][1] : 1;
+  for (const [k, c] of top) { const [wa, wb] = k.split('|'); if (door[wa] && door[wb]) sc.threads.push({ a: door[wa], b: door[wb], w: .8 + 1.6 * c / max, hub: true }); }
+  finishSolids(sc);
+  return sc;
+}
+function chamberGroups(wid) {
+  const w = WBY[wid], groups = {};
+  for (const n of WNOTES[wid]) (groups[n.c] = groups[n.c] || []).push(n);
+  const order = (w.chambers || []).filter(c => groups[c]);
+  for (const c in groups) if (!order.includes(c)) order.push(c);
+  return order.map(c => ({ name: c, notes: groups[c].sort((a, b) => a.t.localeCompare(b.t)) }));
+}
+function buildDistrict(wid) {
+  const groups = chamberGroups(wid);
+  let rows = 0; for (const g of groups) rows += Math.ceil(g.notes.length / 10);
+  const MH = 8 + groups.length + rows * 5 + 2;
+  const sc = makeScene(wid, 44, MH);
+  sc.rect(1, 1, 42, 6, 'Z'); sc.rect(1, 7, 42, 1, 'P');
+  sc.rect(1, 7, 1, MH - 8, 'P'); sc.rect(42, 7, 1, MH - 8, 'P');
+  walls(sc); sc.set(0, 3, 'T'); sc.set(0, 4, 'T');
+  sc.ents.push({ id: 'custodian', kind: 'officer', role: 'custodian', x: 21.5, y: 3.6, pal: OFFICER_PAL.custodian, name: WBY[wid].custodian });
+  sc.ents.push({ id: 'exit', kind: 'exit', x: 0.9, y: 4, name: 'Gate to the Sacred Center' });
+  for (let i = 0; i < 10; i++) sc.lamps.push([4 + i * 4, 1]);
+  let y = 8; const pos = {};
+  for (const g of groups) {
+    sc.rect(1, y, 42, 1, 'P'); sc.labels.push({ text: g.name + ' · ' + g.notes.length, x: 2 * T + 2, y: y * T + 11 }); y++;
+    g.notes.forEach((n, i) => {
+      const col = i % 10, row = Math.floor(i / 10), hx = 2 + col * 4, hy = y + row * 5;
+      if (col === 0) sc.rect(1, hy + 3, 42, 2, 'P');
+      const rs = ruinState(n);
+      sc.build({ kind: 'house', x: hx, y: hy, w: 3, h: 3, roof: notePal(n).R, ruin: rs === 'ruin', scaffold: rs === 'scaffold' });
+      const e = { id: n.id, kind: 'citizen', note: n, x: hx + 1.5, y: hy + 3.55, pal: rs ? GREY : notePal(n), name: n.t, ruin: !!rs };
+      sc.ents.push(e); pos[n.id] = e;
+    });
+    y += Math.ceil(g.notes.length / 10) * 5;
+  }
+  for (const [a, b] of DATA.links) if (pos[a] && pos[b]) sc.threads.push({ a: pos[a], b: pos[b], w: 1 });
+  sc.pos = pos;
+  finishSolids(sc);
+  return sc;
+}
+function buildScene(id) { return id === 'hub' ? buildHub() : buildDistrict(id); }
+
+/* ---------- Sprites ---------- */
+const HEAD_D = ['....OOOO....', '...OHHHHO...', '..OHHHHHHO..', '..OHSSSSHO..', '..OSESSESO..', '..OSSSSSSO..', '...OSSSSO...'];
+const HEAD_U = ['....OOOO....', '...OHHHHO...', '..OHHHHHHO..', '..OHHHHHHO..', '..OHHHHHHO..', '..OSHHHHSO..', '...OSSSSO...'];
+const HEAD_S = ['....OOOO....', '...OHHHHO...', '..OHHHHHHO..', '..OHHHSSSO..', '..OHHSSESO..', '..OHSSSSSO..', '...OSSSSO...'];
+const BODY_D = ['..ORRAARRO..', '.ORRRAARRRO.', '.OSRRRRRRSO.', '.OSRAAAARSO.', '..ORRRRRRO..', '..ORrrrrRO..', '..OrrrrrrO..'];
+const BODY_U = ['..ORRRRRRO..', '.ORRRRRRRRO.', '.OSRRRRRRSO.', '.OSRAAAARSO.', '..ORRRRRRO..', '..ORrrrrRO..', '..OrrrrrrO..'];
+const BODY_S = ['...ORRAAO...', '..ORRRAARO..', '..ORRRRSSO..', '..ORAAAARO..', '..ORRRRRRO..', '..ORrrrrRO..', '..OrrrrrrO..'];
+const LEGS = { d: [['...OO..OO...', '...OO..OO...'], ['..OO....OO..', '..OO....OO..'], ['...OO..OO...', '....OO.OO...']],
+  s: [['....OOO.....', '....OOO.....'], ['...OO.OO....', '..OO...OO...'], ['....OOO.....', '....OOO.....']] };
+const spriteCache = new Map();
+function sprite(pal, dir, frame) {
+  const key = pal.H + pal.R + pal.r + pal.A + pal.S + dir + frame;
+  if (spriteCache.has(key)) return spriteCache.get(key);
+  const head = dir === 'up' ? HEAD_U : (dir === 'down' ? HEAD_D : HEAD_S);
+  const body = dir === 'up' ? BODY_U : (dir === 'down' ? BODY_D : BODY_S);
+  const legs = (dir === 'up' || dir === 'down') ? LEGS.d[frame] : LEGS.s[frame];
+  const rows = head.concat(body, legs);
+  const cv = document.createElement('canvas'); cv.width = 12; cv.height = 16;
+  const c = cv.getContext('2d');
+  const colors = { O: '#14121f', E: '#14121f', H: pal.H, S: pal.S, R: pal.R, r: pal.r, A: pal.A };
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 12; x++) {
+    const ch = rows[y][x]; if (ch === '.') continue;
+    c.fillStyle = colors[ch] || '#ff00ff'; c.fillRect(dir === 'left' ? 11 - x : x, y, 1, 1);
+  }
+  spriteCache.set(key, cv); return cv;
+}
+function drawPortrait(cv, pal) { const c = cv.getContext('2d'); cv.width = 12; cv.height = 16; c.clearRect(0, 0, 12, 16); c.drawImage(sprite(pal, 'down', 0), 0, 0); }
+
+/* ---------- Map painting ---------- */
+let mapCanvas = null;
+function paintScene() {
+  mapCanvas = document.createElement('canvas'); mapCanvas.width = SC.MW * T; mapCanvas.height = SC.MH * T;
+  const c = mapCanvas.getContext('2d');
+  for (let y = 0; y < SC.MH; y++) for (let x = 0; x < SC.MW; x++) paintTile(c, x, y, SC.ground[y][x]);
+  for (const b of SC.buildings) paintBuilding(c, b);
+}
+function paintTile(c, x, y, ch) {
+  const px = x * T, py = y * T, h = hash(x, y);
+  if (ch === 'G') {
+    c.fillStyle = '#2b4535'; c.fillRect(px, py, T, T);
+    for (let i = 0; i < 5; i++) { const a = hash(x * 7 + i, y * 13 - i); const b = hash(x * 3 - i, y * 5 + i * 3); c.fillStyle = a > .5 ? '#335240' : '#243c2e'; c.fillRect(px + Math.floor(a * 15), py + Math.floor(b * 15), 1, 2); }
+    if (h > .9) { c.fillStyle = h > .96 ? '#f0b13a' : '#c98fd6'; c.fillRect(px + 6 + Math.floor(h * 5), py + 7, 2, 2); c.fillStyle = '#4e7a4e'; c.fillRect(px + 6 + Math.floor(h * 5), py + 9, 1, 2); }
+  } else if (ch === 'P') {
+    c.fillStyle = '#a7804f'; c.fillRect(px, py, T, T);
+    c.fillStyle = '#8f6c41'; const off = (y % 2) * 8; c.fillRect(px, py + 7, T, 1); c.fillRect(px, py + 15, T, 1); c.fillRect(px + ((off + 3) % 16), py, 1, 7); c.fillRect(px + ((off + 11) % 16), py + 8, 1, 7);
+    c.fillStyle = '#b8915e'; c.fillRect(px + 1, py, 5, 1); c.fillRect(px + 9, py + 8, 5, 1);
+  } else if (ch === 'Z') {
+    c.fillStyle = '#bd9260'; c.fillRect(px, py, T, T);
+    c.fillStyle = '#a77d4d'; for (let i = 0; i < 16; i += 2) { c.fillRect(px + i, py + ((i + y * 4) % 16), 1, 1); c.fillRect(px + 15 - i, py + ((i + x * 4) % 16), 1, 1); }
+    c.fillStyle = '#c99f6d'; c.fillRect(px, py, T, 1); c.fillRect(px, py, 1, T);
+  } else if (ch === 'X') {
+    c.fillStyle = '#23426a'; c.fillRect(px, py, T, T);
+    if (y > 0 && SC.ground[y - 1][x] !== 'X') { c.fillStyle = '#8f6c41'; c.fillRect(px, py, T, 2); }
+  } else if (ch === 'W') {
+    c.fillStyle = '#a2753f'; c.fillRect(px, py, T, T);
+    c.fillStyle = '#7d5a30'; c.fillRect(px, py + 5, T, 1); c.fillRect(px, py + 10, T, 1); c.fillRect(px + (y % 2 ? 4 : 10), py, 1, 5); c.fillRect(px + (y % 2 ? 10 : 4), py + 6, 1, 4); c.fillRect(px + 7, py + 11, 1, 5);
+    c.fillStyle = '#c2925a'; c.fillRect(px, py, T, 1);
+  } else if (ch === 'T') {
+    c.fillStyle = '#a7804f'; c.fillRect(px, py, T, T);
+    c.fillStyle = '#5b3a22'; c.fillRect(px, py, 4, T);
+  }
+}
+function paintRuin(c, x, y, b) {
+  c.fillStyle = '#9b8f84'; c.fillRect(x + 3, y + 34, 42, 12);
+  c.fillStyle = '#7e746b'; for (let i = 0; i < 42; i += 6) c.fillRect(x + 3 + i, y + 28 + Math.floor(hash(i, b.x + b.y) * 6), 5, 8);
+  c.fillStyle = '#b0a597'; c.fillRect(x + 6, y + 20, 5, 26); c.fillRect(x + 36, y + 26, 5, 20);
+  c.fillStyle = '#6a6159'; for (let i = 0; i < 9; i++) c.fillRect(x + Math.floor(hash(i, b.y) * 44), y + 40 + Math.floor(hash(b.x, i) * 7), 3, 2);
+  c.fillStyle = '#2b2018'; c.fillRect(x + 20, y + 36, 8, 12);
+}
+function paintBuilding(c, b) {
+  const x = b.x * T, y = b.y * T, w = b.w * T, h = b.h * T;
+  const wall = '#dcb47e', wallD = '#b48a55', outline = '#3a2615';
+  if (b.kind === 'house') {
+    if (b.ruin || b.scaffold) {
+      paintRuin(c, x, y, b);
+      if (b.scaffold) {
+        c.fillStyle = '#7a5a2a'; for (const px of [x + 4, x + 22, x + 41]) c.fillRect(px, y + 12, 2, 34);
+        c.fillRect(x + 3, y + 20, 42, 2); c.fillRect(x + 3, y + 32, 42, 2);
+        c.fillStyle = '#f0b13a'; c.fillRect(x + 23, y + 6, 8, 5); c.fillStyle = '#7a5a2a'; c.fillRect(x + 22, y + 6, 1, 8);
+      }
+      return;
+    }
+    c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(x + 3, y + 45, 44, 3);
+    c.fillStyle = wall; c.fillRect(x + 3, y + 18, 42, 28);
+    c.fillStyle = wallD; c.fillRect(x + 3, y + 42, 42, 4);
+    c.fillStyle = outline; c.fillRect(x + 2, y + 18, 1, 28); c.fillRect(x + 45, y + 18, 1, 28);
+    c.fillStyle = b.roof; c.beginPath(); c.moveTo(x, y + 20); c.lineTo(x + 48, y + 20); c.lineTo(x + 40, y + 5); c.lineTo(x + 8, y + 5); c.closePath(); c.fill();
+    c.fillStyle = shade(b.roof, .72); for (let i = 9; i < 20; i += 4) c.fillRect(x + 4, y + i, 40, 1);
+    c.fillStyle = shade(b.roof, 1.2); c.fillRect(x + 8, y + 5, 32, 2);
+    c.fillStyle = outline; c.fillRect(x, y + 20, 48, 1);
+    c.fillStyle = '#3a2617'; c.fillRect(x + 20, y + 34, 8, 12); c.fillRect(x + 21, y + 32, 6, 2);
+    c.fillStyle = '#f6d27a'; c.fillRect(x + 8, y + 26, 7, 7); c.fillRect(x + 33, y + 26, 7, 7);
+    c.fillStyle = outline; c.fillRect(x + 11, y + 26, 1, 7); c.fillRect(x + 36, y + 26, 1, 7);
+  } else if (b.kind === 'hall' || b.kind === 'gatehouse') {
+    c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(x + 3, y + h - 3, w - 4, 3);
+    c.fillStyle = wall; c.fillRect(x + 4, y + 22, w - 8, h - 24);
+    c.fillStyle = '#efe2c4'; for (let i = x + 8; i < x + w - 6; i += 12) c.fillRect(i, y + 24, 4, h - 28);
+    c.fillStyle = b.roof; c.beginPath(); c.moveTo(x, y + 24); c.lineTo(x + w / 2, y + 4); c.lineTo(x + w, y + 24); c.closePath(); c.fill();
+    c.fillStyle = shade(b.roof, .7); c.fillRect(x, y + 22, w, 3);
+    c.fillStyle = wallD; c.fillRect(x + 2, y + h - 6, w - 4, 4);
+    c.fillStyle = '#2b1d14'; c.fillRect(x + w / 2 - 6, y + h - 22, 12, 20); c.beginPath(); c.arc(x + w / 2, y + h - 22, 6, Math.PI, 0); c.fill();
+    if (b.kind === 'gatehouse') {
+      c.fillStyle = '#f0b13a'; c.font = '700 8px "Pixelify Sans", monospace'; c.textAlign = 'center'; c.fillText(b.num, x + w / 2, y + 19);
+    } else { c.fillStyle = '#f0b13a'; c.fillRect(x + w / 2 - 2, y + 13, 4, 4); }
+  } else if (b.kind === 'yantra') {
+    c.fillStyle = '#a8865a'; c.fillRect(x, y + 34, w, 14);
+    c.fillStyle = '#8a6a43'; c.fillRect(x, y + 46, w, 2);
+    c.strokeStyle = '#e8d6b0'; c.lineWidth = 3;
+    c.beginPath(); c.arc(x + 22, y + 40, 18, Math.PI, Math.PI * 1.5); c.stroke();
+    c.beginPath(); c.arc(x + w - 22, y + 40, 18, Math.PI * 1.5, 0); c.stroke();
+    c.fillStyle = '#e3c895'; c.beginPath(); c.moveTo(x + w / 2 - 10, y + 44); c.lineTo(x + w / 2 + 10, y + 44); c.lineTo(x + w / 2 + 3, y + 2); c.lineTo(x + w / 2 - 3, y + 2); c.closePath(); c.fill();
+    c.fillStyle = '#b48a55'; for (let i = 8; i < 42; i += 4) c.fillRect(x + w / 2 - 2, y + i, 4, 1);
+    c.fillStyle = '#f0b13a'; c.fillRect(x + w / 2 - 1, y, 2, 3);
+  }
+}
+
+/* ---------- Canvas & camera ---------- */
+const cv = $('view'), ctx = cv.getContext('2d');
+let dpr = 1, zoom = 3, vw = 0, vh = 0;
+function resize() {
+  const r = $('game').getBoundingClientRect();
+  dpr = Math.max(1, Math.round(window.devicePixelRatio || 1));
+  vw = r.width; vh = r.height;
+  zoom = vw < 560 ? 2 : (vw < 1600 ? 3 : 4);
+  if (vh / zoom < 150 && zoom > 2) zoom = 2;
+  cv.width = Math.round(vw * dpr); cv.height = Math.round(vh * dpr);
+}
+new ResizeObserver(resize).observe($('game'));
+
+/* ---------- Input ---------- */
+const keys = { up: false, down: false, left: false, right: false };
+const KEYMAP = { ArrowUp: 'up', KeyW: 'up', ArrowDown: 'down', KeyS: 'down', ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right' };
+let mode = 'title';
+window.addEventListener('keydown', e => {
+  const tag = e.target && e.target.tagName;
+  if (tag === 'INPUT' || tag === 'TEXTAREA') { if (e.key === 'Escape') e.target.blur(); return; }
+  if (KEYMAP[e.code]) { keys[KEYMAP[e.code]] = true; if (mode === 'play') e.preventDefault(); }
+  if (mode === 'play') {
+    if (e.code === 'KeyE' || e.code === 'Space' || e.code === 'Enter') { e.preventDefault(); interact(); }
+    else if (e.code === 'KeyJ') openJournal();
+  } else if (mode === 'dialog') {
+    if (e.code === 'Escape') closeDialog();
+    else if (e.code === 'KeyE' || ((e.code === 'Enter' || e.code === 'Space') && !(document.activeElement && document.activeElement.tagName === 'BUTTON'))) { e.preventDefault(); advanceDialog(); }
+    else if (/^Digit[1-9]$/.test(e.code)) { const b = $('dlgChoices').querySelectorAll('button')[+e.code.slice(5) - 1]; if (b) b.click(); }
+  } else if (mode === 'journal' && (e.code === 'Escape' || e.code === 'KeyJ')) closeJournal();
+  else if (mode === 'research' && e.code === 'Escape') closeResearch();
+  else if (mode === 'export' && e.code === 'Escape') closeExport();
+});
+window.addEventListener('keyup', e => { if (KEYMAP[e.code]) keys[KEYMAP[e.code]] = false; });
+window.addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+document.querySelectorAll('.dpad button').forEach(b => {
+  const k = b.dataset.k;
+  b.addEventListener('pointerdown', e => { e.preventDefault(); keys[k] = true; b.setPointerCapture(e.pointerId); });
+  const up = () => { keys[k] = false; };
+  b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('lostpointercapture', up);
+});
+$('aBtn').addEventListener('click', () => { if (mode === 'play') interact(); else if (mode === 'dialog') advanceDialog(); });
+const coarse = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+
+/* ---------- Movement ---------- */
+const P = { x: 21.5, y: 18.5, dir: 'up', moving: false, anim: 0 };
+function solidAt(tx, ty) { if (tx < 0 || ty < 0 || tx >= SC.MW || ty >= SC.MH) return true; return SC.solid[ty][tx]; }
+function blockedAt(x, y) {
+  const hw = .28, top = y - .22, bot = y + .12;
+  for (const [cx, cy] of [[x - hw, top], [x + hw, top], [x - hw, bot], [x + hw, bot]]) if (solidAt(Math.floor(cx), Math.floor(cy))) return true;
+  for (const e of SC.ents) { if (e.kind === 'portal' || e.kind === 'exit') continue; if (Math.abs(e.x - x) < .62 && Math.abs(e.y - y) < .42) return true; }
+  return false;
+}
+function update(dt) {
+  if (mode !== 'play') { P.moving = false; return; }
+  const dx = (keys.right ? 1 : 0) - (keys.left ? 1 : 0), dy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0);
+  P.moving = !!(dx || dy);
+  if (P.moving) {
+    if (dx && (Math.abs(dx) >= Math.abs(dy) || !dy)) P.dir = dx > 0 ? 'right' : 'left'; else P.dir = dy > 0 ? 'down' : 'up';
+    const len = Math.hypot(dx, dy), sp = 5 * dt / len;
+    const nx = P.x + dx * sp, ny = P.y + dy * sp;
+    if (!blockedAt(nx, P.y)) P.x = nx;
+    if (!blockedAt(P.x, ny)) P.y = ny;
+    P.anim += dt * 8;
+  } else P.anim = 0;
+  updatePrompt();
+}
+let nearEnt = null;
+function nearest() {
+  let best = null, bd = 1.5;
+  for (const e of SC.ents) { const d = Math.hypot(e.x - P.x, e.y - P.y); if (d < bd) { bd = d; best = e; } }
+  return best;
+}
+function verbFor(e) {
+  if (e.kind === 'terminal') return 'Use';
+  if (e.kind === 'portal') return 'Enter';
+  if (e.kind === 'exit') return 'Return through';
+  if (e.ruin) return 'Inspect the ruin of';
+  return 'Talk to';
+}
+function updatePrompt() {
+  const e = nearest();
+  if (e !== nearEnt) {
+    nearEnt = e;
+    if (e) { $('promptBtn').innerHTML = (coarse ? '' : '<kbd>E</kbd>') + escapeHtml(verbFor(e) + ' ' + e.name); $('prompt').hidden = false; }
+    else $('prompt').hidden = true;
+  }
+}
+$('promptBtn').addEventListener('click', () => interact());
+function interact() {
+  const e = nearest(); if (!e) return;
+  if (e.kind === 'terminal') return openResearch();
+  if (e.kind === 'portal') return enterScene(e.wing, 2.2, 3.6, 'right');
+  if (e.kind === 'exit') { const g = hubGates().find(x => x.w.id === SC.id); return enterScene('hub', g.door.x, g.door.y + .4, g.y < 10 ? 'down' : 'up'); }
+  if (e.kind === 'tent') return talkTent(e.rec);
+  if (e.kind === 'officer') return talkOfficer(e.role);
+  if (e.kind === 'citizen') return e.ruin ? talkRuin(e.note) : talkCitizen(e.note);
+}
+function enterScene(id, x, y, dir) {
+  const changed = !SC || SC.id !== id;
+  SC = buildScene(id); paintScene();
+  P.x = x; P.y = y; P.dir = dir || P.dir;
+  S.scene = id; S.px = x; S.py = y;
+  if (changed && id !== 'hub') {
+    const w = WBY[id];
+    if (!S.visited[id]) { S.visited[id] = 1; gain(5, 0); }
+    toast(w.name + (w.q ? ': ' + w.q : ''), true);
+  }
+  nearEnt = undefined; hud(); save(); updatePrompt();
+}
+function travelTo(n, viaThread) {
+  const from = SC.id;
+  enterScene(n.w, 0, 0, 'up');
+  const e = SC.pos[n.id];
+  P.x = e.x; P.y = e.y + 1.05; P.dir = 'up'; S.px = P.x; S.py = P.y;
+  if (viaThread && from !== 'hub' && from !== n.w && !S.crossed) { S.crossed = true; toast('You crossed into another district along a thread.', true); }
+  nearEnt = undefined; save(); hud(); updatePrompt();
+}
+function refreshScene() { const x = P.x, y = P.y; SC = buildScene(SC.id); paintScene(); P.x = x; P.y = y; nearEnt = undefined; updatePrompt(); hud(); }
+
+/* ---------- Render ---------- */
+let tNow = 0;
+function render() {
+  if (!SC) { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = '#141833'; ctx.fillRect(0, 0, cv.width, cv.height); return; }
+  const Z = zoom * dpr, worldW = SC.MW * T, worldH = SC.MH * T, viewW = vw / zoom, viewH = vh / zoom;
+  let camX = P.x * T - viewW / 2, camY = P.y * T - viewH / 2;
+  camX = viewW >= worldW ? (worldW - viewW) / 2 : Math.max(0, Math.min(worldW - viewW, camX));
+  camY = viewH >= worldH ? (worldH - viewH) / 2 : Math.max(0, Math.min(worldH - viewH, camY));
+  const ox = Math.round(-camX * Z), oy = Math.round(-camY * Z);
+  const inView = (x, y, m) => x * T > camX - m && x * T < camX + viewW + m && y * T > camY - m && y * T < camY + viewH + m;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = '#141833'; ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.setTransform(Z, 0, 0, Z, ox, oy);
+  ctx.imageSmoothingEnabled = false;
+  if (mapCanvas) ctx.drawImage(mapCanvas, 0, 0);
+  // water shimmer
+  const y0 = Math.max(0, Math.floor(camY / T)), y1 = Math.min(SC.MH, Math.ceil((camY + viewH) / T) + 1);
+  for (let y = y0; y < y1; y++) for (let x = 1; x < SC.MW - 1; x++) {
+    if (SC.ground[y][x] !== 'X') continue;
+    const ph = Math.sin(tNow * 1.6 + x * .9 + y * 2.1);
+    ctx.fillStyle = ph > .55 ? '#4b78a8' : '#35608e';
+    ctx.fillRect(x * T + ((x * 5 + Math.floor(tNow * 3)) % 12), y * T + 5 + (y % 2) * 4, 4, 1);
+  }
+  // threads
+  ctx.save(); ctx.setLineDash([3, 3]); ctx.lineDashOffset = -tNow * 8;
+  const near = nearEnt && nearEnt.kind === 'citizen' ? nearEnt.id : null;
+  for (const th of SC.threads) {
+    const a = th.a, b = th.b;
+    if (!th.hub && !inView(a.x, a.y, 60) && !inView(b.x, b.y, 60)) continue;
+    const hot = near && (a.id === near || b.id === near);
+    ctx.lineWidth = hot ? 1.6 : th.w;
+    ctx.strokeStyle = hot ? 'rgba(255,212,107,.95)' : (th.hub ? 'rgba(240,177,58,.42)' : 'rgba(240,177,58,.3)');
+    const mx = (a.x + b.x) / 2 * T, my = Math.min(a.y, b.y) * T - (th.hub ? 30 : 26 + Math.abs(a.x - b.x) * 2);
+    ctx.beginPath(); ctx.moveTo(a.x * T, a.y * T - 6); ctx.quadraticCurveTo(mx, my, b.x * T, b.y * T - 6); ctx.stroke();
+  }
+  ctx.restore();
+  // lamps
+  const lit = sceneLit();
+  SC.lamps.forEach(([lx, ly], i) => { const x = lx * T + 7, y = ly * T; ctx.fillStyle = '#2a2230'; ctx.fillRect(x, y + 3, 2, 12); ctx.fillRect(x - 2, y + 14, 6, 2); ctx.fillStyle = i < lit ? '#ffd46b' : '#4a4658'; ctx.fillRect(x - 2, y - 1, 6, 5); ctx.fillStyle = '#2a2230'; ctx.fillRect(x - 2, y - 2, 6, 1); });
+  // terminal and tents
+  let term = null;
+  for (const e of SC.ents) {
+    if (e.kind === 'terminal') {
+      term = e; const tx = Math.floor(e.x) * T, ty = Math.floor(e.y) * T;
+      ctx.fillStyle = '#7a5a2a'; ctx.fillRect(tx + 6, ty + 6, 4, 9); ctx.fillStyle = '#c69a3a'; ctx.fillRect(tx + 2, ty + 2, 12, 6); ctx.fillStyle = 0.5 + 0.5 * Math.sin(tNow * 3) > .5 ? '#9ff0d8' : '#6fd1b8'; ctx.fillRect(tx + 4, ty + 3, 8, 3);
+    } else if (e.kind === 'tent') {
+      const tx = (e.x - .5) * T, ty = (e.y - .9) * T;
+      ctx.fillStyle = '#6aa84f'; ctx.beginPath(); ctx.moveTo(tx - 6, ty + 10); ctx.lineTo(tx + 8, ty - 10); ctx.lineTo(tx + 22, ty + 10); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#2b3a20'; ctx.beginPath(); ctx.moveTo(tx + 4, ty + 10); ctx.lineTo(tx + 8, ty - 2); ctx.lineTo(tx + 12, ty + 10); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#f0b13a'; ctx.fillRect(tx + 8, ty - 14, 1, 5); ctx.fillRect(tx + 9, ty - 14, 4, 3);
+    }
+  }
+  // sprites (y-sorted, culled)
+  const drawables = [];
+  for (const e of SC.ents) if ((e.kind === 'officer' || e.kind === 'citizen' || e.kind === 'tent') && inView(e.x, e.y, 32)) drawables.push(e);
+  drawables.push(null);
+  drawables.sort((a, b) => (a ? a.y : P.y) - (b ? b.y : P.y));
+  for (const e of drawables) {
+    if (!e) { const fr = P.moving ? 1 + (Math.floor(P.anim) % 2) : 0; drawChar(PLAYER_PAL, P.x, P.y, P.dir, fr, 0); }
+    else if (e.kind === 'tent') drawChar(e.pal, e.x + .9, e.y + .1, 'down', 0, 0);
+    else { const bob = !e.ruin && Math.sin(tNow * 2 + e.x * 1.7 + e.y) > .8 ? -1 : 0; drawChar(e.pal, e.x, e.y, faceToward(e), 0, bob); }
+  }
+  // night overlay & glows
+  const dark = Math.max(.05, .4 - lit * .035);
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = 'rgba(14,16,44,' + dark.toFixed(3) + ')'; ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.setTransform(Z, 0, 0, Z, ox, oy);
+  ctx.save(); ctx.globalCompositeOperation = 'lighter';
+  SC.lamps.forEach(([lx, ly], i) => { if (i >= lit) return; const x = lx * T + 8, y = ly * T + 2; const g = ctx.createRadialGradient(x, y, 1, x, y, 30); g.addColorStop(0, 'rgba(255,190,90,.38)'); g.addColorStop(1, 'rgba(255,190,90,0)'); ctx.fillStyle = g; ctx.fillRect(x - 30, y - 30, 60, 60); });
+  if (term) { const tx = Math.floor(term.x) * T, ty = Math.floor(term.y) * T; const g = ctx.createRadialGradient(tx + 8, ty + 4, 1, tx + 8, ty + 4, 22); g.addColorStop(0, 'rgba(110,230,200,.3)'); g.addColorStop(1, 'rgba(110,230,200,0)'); ctx.fillStyle = g; ctx.fillRect(tx - 14, ty - 18, 44, 44); }
+  ctx.restore();
+  // labels & markers
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  for (const b of SC.buildings) if (b.name && b.kind !== 'house') label(b.name, (b.x + b.w / 2) * T, b.y * T + (b.kind === 'yantra' ? -2 : 2), '#f3e3c0', 6);
+  ctx.textAlign = 'left';
+  for (const l of SC.labels) if (inView(l.x / T, l.y / T, 120)) label(l.text, l.x, l.y, '#f3e3c0', 7, true);
+  ctx.textAlign = 'center';
+  if (SC.id !== 'hub') { const w = WBY[SC.id]; label(w.name + (w.q ? ' · ' + w.q : ''), 21.5 * T, 6.6 * T, '#ffd88a', 6); }
+  for (const e of SC.ents) {
+    if (!(e.kind === 'officer' || e.kind === 'citizen' || e.kind === 'tent')) continue;
+    if (!inView(e.x, e.y, 20)) continue;
+    const m = marker(e);
+    if (m) { const by = e.y * T - 20 + Math.round(Math.sin(tNow * 4) * 1.5); ctx.font = '700 9px "Pixelify Sans", monospace'; ctx.fillStyle = '#14121f'; ctx.fillText(m.ch, e.x * T + .6, by + .6); ctx.fillStyle = m.color; ctx.fillText(m.ch, e.x * T, by); }
+    if (e === nearEnt || e.kind === 'officer') label(clip(e.name, 48), e.x * T, e.y * T + 13, e.kind === 'officer' ? '#ffd88a' : '#efe6d2', 5);
+  }
+}
+function label(text, x, y, color, size, left) {
+  ctx.font = '600 ' + size + 'px "Pixelify Sans", monospace';
+  const w = ctx.measureText(text).width, bx = left ? x - 2 : x - w / 2 - 2;
+  ctx.fillStyle = 'rgba(14,16,40,.72)'; ctx.fillRect(bx, y - size, w + 4, size + 2.5);
+  ctx.fillStyle = color; ctx.fillText(text, x, y);
+}
+function drawChar(pal, x, y, dir, frame, bob) {
+  const img = sprite(pal, dir, frame);
+  const px = Math.round(x * T - 6), py = Math.round(y * T - 15 + bob);
+  ctx.fillStyle = 'rgba(0,0,0,.28)'; ctx.fillRect(px + 2, Math.round(y * T), 8, 2);
+  ctx.drawImage(img, px, py);
+}
+function faceToward(e) {
+  const d = Math.hypot(e.x - P.x, e.y - P.y);
+  if (d > 2.4) return 'down';
+  const dx = P.x - e.x, dy = P.y - e.y;
+  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 'right' : 'left';
+  return dy > 0 ? 'down' : 'up';
+}
+function marker(e) {
+  if (e.kind === 'officer') {
+    if (e.role === 'owl') { if (S.qState === 'locked' || S.qState === 'ready') return { ch: S.qState === 'ready' ? '?' : '!', color: S.qState === 'ready' ? '#86c98f' : '#f0b13a' }; return null; }
+    if (e.role === 'scribe' && satchelCount()) return { ch: '!', color: '#f0b13a' };
+    if (e.role === 'lawyer' && QUESTS[S.q] && QUESTS[S.q].id === 'q4' && S.qState === 'active') return { ch: '!', color: '#f0b13a' };
+    return null;
+  }
+  if (e.kind === 'tent') return { ch: '•', color: '#9ff0d8' };
+  if (e.ruin) return proposedFor(e.note.p) ? null : { ch: '?', color: '#e2715f' };
+  if (!S.talked[e.note.p]) return { ch: '•', color: '#f0b13a' };
+  return null;
+}
+
+/* ---------- Loop ---------- */
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now; tNow += dt;
+  if (SC) update(dt);
+  render();
+  const showTouch = coarse && mode === 'play';
+  if ($('touch').hidden === showTouch) $('touch').hidden = !showTouch;
+  requestAnimationFrame(frame);
+}
+
+/* ---------- Dialogue ---------- */
+let D = null;
+function dialog(opts) {
+  if (askCtl) { askCtl.abort(); askCtl = null; }
+  D = Object.assign({ i: 0, choices: null, ask: null }, opts);
+  mode = 'dialog'; $('dlg').hidden = false; $('prompt').hidden = true; nearEnt = undefined;
+  if (opts.pal) { drawPortrait($('dlgPortrait'), opts.pal); $('dlgPortrait').hidden = false; } else $('dlgPortrait').hidden = true;
+  $('dlgName').textContent = opts.name; $('dlgRole').textContent = opts.role || '';
+  showPage();
+}
+function showPage() {
+  const lastPage = D.i >= D.pages.length - 1;
+  $('dlgText').textContent = D.pages[D.i]; $('dlgText').scrollTop = 0;
+  const box = $('dlgChoices'); box.innerHTML = '';
+  $('dlgAsk').hidden = !(lastPage && D.ask && aiOn());
+  if (!lastPage) {
+    addChoice('Continue', () => advanceDialog(), true);
+    $('dlgHint').textContent = 'Enter to continue · Esc to leave';
+  } else {
+    const ch = (D.choices || []).slice();
+    if (!ch.length) ch.push({ label: 'Leave', fn: closeDialog });
+    ch.forEach((c, i) => addChoice((ch.length > 1 ? (i + 1) + '. ' : '') + c.label, c.fn, i === 0 && !c.secondary));
+    $('dlgHint').textContent = ch.length > 1 ? 'Press 1–' + Math.min(9, ch.length) + ' to choose · Esc to leave' : 'Enter to close';
+  }
+}
+function addChoice(text, fn, primary) {
+  const b = document.createElement('button'); b.type = 'button'; b.className = 'btn' + (primary ? ' primary' : ''); b.textContent = text;
+  b.addEventListener('click', fn); $('dlgChoices').appendChild(b);
+}
+function advanceDialog() {
+  if (!D) return;
+  if (D.i < D.pages.length - 1) { D.i++; showPage(); }
+  else { const ch = D.choices; if (!ch || !ch.length) closeDialog(); }
+}
+$('dlgText').addEventListener('click', advanceDialog);
+let askCtl = null;
+function closeDialog() {
+  if (askCtl) { askCtl.abort(); askCtl = null; }
+  const after = D && D.onClose; D = null; $('dlg').hidden = true; mode = 'play'; nearEnt = undefined; updatePrompt();
+  if (after) after();
+}
+function chain(fn) { return () => { const after = D && D.onClose; if (D) D.onClose = null; closeDialog(); if (after) after(); fn(); }; }
+$('dlgAsk').addEventListener('submit', async e => {
+  e.preventDefault();
+  const q = $('dlgAskInput').value.trim(); if (!q || !D || !D.ask || !aiOn()) return;
+  const a = D.ask, btn = $('dlgAskBtn');
+  btn.disabled = true; $('dlgText').textContent = 'Thinking...';
+  askCtl = new AbortController();
+  const prompt = 'You are a citizen of Arx, a city where every note in a personal knowledge library is a person. You personify the note titled "' + a.title + '" in the ' + a.wing + '.\n'
+    + 'Speak in first person, warm and brief: at most 80 words, plain prose, no lists or markdown.\n'
+    + 'Answer ONLY from the note text below. If the question goes beyond it, say the note does not cover that and suggest asking a neighbour (' + (a.nb || 'no one yet') + ').\n\nNOTE TEXT:\n' + a.note + '\n\nQUESTION:\n' + q;
+  try {
+    await ai(prompt, { modelTier: 'quick', cache: false, signal: askCtl.signal, onText: ({ text }) => { if (D) $('dlgText').textContent = text; } });
+    $('dlgAskInput').value = '';
+  } catch (err) { if (D) $('dlgText').textContent = (err && err.text) || aiFail(err) || D.pages[D.i]; if (aiDenied) $('dlgAsk').hidden = true; }
+  finally { btn.disabled = false; askCtl = null; }
+});
+function pagesFrom(text, max) {
+  const parts = String(text || '').split(/(?<=[.!?…])\s+/), out = []; let cur = '';
+  for (const p of parts) { if (cur && (cur + ' ' + p).length > max) { out.push(cur); cur = p; } else cur = cur ? cur + ' ' + p : p; }
+  if (cur) out.push(cur);
+  return out.length ? out : [''];
+}
+
+/* ---------- Toasts & HUD ---------- */
+function toast(msg, gold) {
+  const t = document.createElement('div'); t.className = 'toast panel' + (gold ? ' gold' : ''); t.textContent = msg;
+  $('toasts').appendChild(t); setTimeout(() => t.remove(), 3800);
+  while ($('toasts').children.length > 3) $('toasts').firstChild.remove();
+}
+function gain(xp, ink) {
+  const before = rankOf(S.insight);
+  if (xp) S.insight += xp;
+  if (ink) S.ink += ink;
+  const after = rankOf(S.insight);
+  if (after > before) toast('Rank up: you are now a ' + RANKS[after][0] + '!', true);
+  checkQuest(); hud(); save();
+}
+function satchelCount() { return S.proposals.filter(x => !x.filed).length + S.research.filter(x => !x.filed).length + S.revisit.filter(x => !x.filed).length; }
+function hud() {
+  if (!SC) return;
+  const r = rankOf(S.insight); $('rankName').textContent = RANKS[r][0];
+  const next = RANKS[r + 1];
+  $('rankNext').textContent = next ? S.insight + ' / ' + next[1] + ' insight' : S.insight + ' insight';
+  $('xpBar').style.width = next ? ((S.insight - RANKS[r][1]) / (next[1] - RANKS[r][1]) * 100) + '%' : '100%';
+  $('placeName').textContent = SC.id === 'hub' ? 'Sacred Center' : WBY[SC.id].name;
+  $('inkN').textContent = S.ink; $('lampN').textContent = sceneLit(); $('cardN').textContent = S.cards.length; $('satN').textContent = satchelCount();
+  tracker();
+}
+function tracker() {
+  const ul = $('trackList'), qd = QUESTS[S.q];
+  let html;
+  if (!qd) html = '<li><b>Light the city</b><span>Restore ruins and file your field reports. ' + NOTES.filter(n => ruinState(n) === 'ruin').length + ' houses still stand in ruins.</span></li>';
+  else if (S.qState === 'locked') html = '<li><b>Meet the Great Owl</b><span>The Owl waits by the sundial in the middle of the plaza.</span></li>';
+  else if (S.qState === 'ready') html = '<li><b>' + escapeHtml(qd.name) + '</b><span>Done. Return to the Great Owl in the Sacred Center.</span></li>';
+  else html = '<li><b>' + escapeHtml(qd.name) + '</b><span>' + escapeHtml(qd.step()) + '</span></li>';
+  ul.innerHTML = html;
+}
+function checkQuest() {
+  const qd = QUESTS[S.q];
+  if (qd && S.qState === 'active' && qd.check()) { S.qState = 'ready'; toast('Quest done: ' + qd.name + '. Return to the Great Owl.', true); }
+}
+
+/* ---------- Officers ---------- */
+function talkOfficer(role) {
+  if (role === 'owl') return talkOwl();
+  if (role === 'scribe') return talkScribe();
+  if (role === 'lawyer') return talkLawyer();
+  if (role === 'custodian') return talkCustodian();
+}
+const OWL_INTRO = {
+  q1: () => ['Every house in this city is a note from your vault: ' + NOTES.length + ' citizens in ' + WINGS.length + ' districts, joined by ' + DATA.links.length + ' golden threads.', 'Each gate around this plaza opens on one wing. Enter any of them and meet three citizens.'],
+  q2: () => { const r = NOTES.filter(n => ruinState(n) === 'ruin').length; return ['Some houses stand in ruins: ' + r + ' notes that no thread reaches yet. Unlinked knowledge is easy to lose.', 'Find one and propose a kin for it. Your proposal goes in your satchel; the Scribe files it to the Inbox, and Processing decides.']; },
+  q3: () => ['No wing stands alone. Many threads run from one district into another.', 'Ask a citizen to show you their threads, and follow one that leads into a different district.'],
+  q4: () => ['Knowledge you cannot defend is knowledge you only borrowed.', 'Collect at least four cards from citizens, then face the Lawyer in the Court of Reason, east of this plaza.'],
+  q5: () => ['Your satchel fills as you work: proposed links, research, notes you mixed up.', 'Take it to the Scribe at the Inbox, west of this plaza. The report enters your vault the way all knowledge does: Inbox, then Processing.']
+};
+function talkOwl() {
+  const base = { name: 'The Great Owl', role: 'Sacred Center · What currently matters?', pal: OFFICER_PAL.owl };
+  const qd = QUESTS[S.q];
+  if (!qd) {
+    const r = NOTES.filter(n => ruinState(n) === 'ruin').length;
+    return dialog(Object.assign({}, base, { pages: ['Seek understanding before classification. Seek synthesis before accumulation.', r + ' houses still stand in ruins across the city. When your field reports are processed and the city is rebuilt from your vault, the lamps will tell.'] }));
+  }
+  if (S.qState === 'locked') {
+    const intro = S.q === 0 ? ['Welcome, steward. I am the Great Owl of the Sacred Center.'] : [];
+    return dialog(Object.assign({}, base, { pages: intro.concat(OWL_INTRO[qd.id]()), onClose: () => { S.qState = 'active'; checkQuest(); save(); hud(); toast('New quest: ' + qd.name, true); } }));
+  }
+  if (S.qState === 'ready') {
+    const [xp, ink] = qd.reward;
+    S.q++; S.qState = 'locked'; gain(xp, ink); toast('Quest complete: +' + xp + ' insight, +' + ink + ' Ink', true);
+    return dialog(Object.assign({}, base, { pages: ['Well done. That is how a library becomes a city.', QUESTS[S.q] ? 'Speak with me again when you are ready for the next task.' : 'You have walked every road I know. The rest of the city is yours to tend.'] }));
+  }
+  return dialog(Object.assign({}, base, { pages: [qd.step()] }));
+}
+function talkCustodian() {
+  const w = WBY[SC.id], all = WNOTES[w.id], ruins = wingRuins(w.id);
+  const base = { name: w.custodian, role: w.name, pal: OFFICER_PAL.custodian };
+  const pages = ['Welcome to the ' + w.name + '.' + (w.q ? ' Our question: ' + w.q : ''),
+    'This district holds ' + all.length + ' notes in ' + chamberGroups(w.id).length + ' chambers, with ' + wingThreads(w.id) + ' threads. ' + (ruins.length ? ruins.length + ' houses stand in ruins: notes no thread reaches yet.' : 'Every house here is linked.')];
+  const choices = [{ label: 'Test me', fn: chain(custodianQuiz) }];
+  if (ruins.length) choices.push({ label: 'Show me a ruin', fn: chain(() => { const n = ruins.slice().sort((a, b) => Math.hypot(SC.pos[a.id].x - P.x, SC.pos[a.id].y - P.y) - Math.hypot(SC.pos[b.id].x - P.x, SC.pos[b.id].y - P.y))[0]; travelTo(n); }) });
+  choices.push({ label: 'Leave', fn: closeDialog, secondary: true });
+  dialog(Object.assign({}, base, { pages, choices }));
+}
+function custodianQuiz() {
+  const w = WBY[SC.id], pool = WNOTES[w.id].filter(n => n.s && n.s.length > 60);
+  const base = { name: w.custodian, role: w.name, pal: OFFICER_PAL.custodian };
+  if (pool.length < 3) return dialog(Object.assign({}, base, { pages: ['This district is too small for my test. Come back when it has grown.'] }));
+  const met = pool.filter(n => S.talked[n.p]);
+  const ans = pick(met.length && Math.random() < .7 ? met : pool);
+  const others = shuffle(pool.filter(n => n !== ans && n.t !== ans.t)).slice(0, 2);
+  const opts = shuffle([ans].concat(others));
+  dialog(Object.assign({}, base, {
+    pages: ['Which citizen says this? "' + clip(ans.s, 280) + '"'],
+    choices: opts.map(n => ({ label: clip(n.t, 60), fn: chain(() => {
+      if (n === ans) { gain(15, 1); toast('Correct: +15 insight, +1 Ink', true); dialog(Object.assign({}, base, { pages: ['Yes: ' + ans.t + '. Their house is in ' + ans.c + '.'], choices: [{ label: 'Test me again', fn: chain(custodianQuiz) }, { label: 'Leave', fn: closeDialog, secondary: true }] })); }
+      else {
+        addRevisit(ans.p);
+        dialog(Object.assign({}, base, { pages: ['No, that was ' + ans.t + ', in ' + ans.c + '. I have put them in your satchel to revisit.'], choices: [{ label: 'Take me to them', fn: chain(() => travelTo(ans)) }, { label: 'Test me again', fn: chain(custodianQuiz) }, { label: 'Leave', fn: closeDialog, secondary: true }] }));
+      }
+    }) }))
+  }));
+}
+function addRevisit(p) { if (!S.revisit.some(x => x.p === p && !x.filed)) { S.revisit.push({ p, at: today(), filed: false }); save(); hud(); } }
+
+/* ---------- Citizens ---------- */
+function neighbourList(n) { return ADJ[n.id].map(id => BYID[id]); }
+function citizenRole(n) { return WBY[n.w].name + ' · ' + n.c + ' · ' + n.ty; }
+function talkCitizen(n) {
+  const first = !S.talked[n.p];
+  const pages = pagesFrom(n.s || ('I hold the note on ' + n.t + '.'), 260);
+  for (const k of (n.k || []).slice(0, 2)) pages.push('Remember: ' + k);
+  const nb = neighbourList(n);
+  const here = nb.filter(m => m.w === n.w), away = nb.filter(m => m.w !== n.w);
+  const awayW = {}; for (const m of away) awayW[WBY[m.w].name] = (awayW[WBY[m.w].name] || 0) + 1;
+  pages.push(nb.length ? 'My threads: ' + here.length + ' in this district' + (away.length ? ', and ' + Object.entries(awayW).map(([k, v]) => v + ' to the ' + k).join(', ') : '') + '.' : 'No thread reaches my house.');
+  const choices = [];
+  if (nb.length) choices.push({ label: 'Show me my threads', fn: chain(() => threadMenu(n)) });
+  choices.push({ label: 'Leave', fn: closeDialog, secondary: true });
+  dialog({ name: n.t, role: citizenRole(n), pal: notePal(n), pages, choices,
+    ask: { title: n.t, wing: WBY[n.w].name, note: n.x || n.s, nb: nb.slice(0, 4).map(m => m.t).join(', ') },
+    onClose: () => {
+      if (first) {
+        S.talked[n.p] = 1;
+        if (!S.cards.includes(n.p)) { S.cards.push(n.p); toast('Card collected: ' + clip(n.t, 40) + ' (' + cardType(n.ty) + ')', true); }
+        gain(10, 0);
+      }
+    } });
+}
+function threadMenu(n) {
+  const nb = neighbourList(n);
+  const away = shuffle(nb.filter(m => m.w !== n.w)), here = shuffle(nb.filter(m => m.w === n.w));
+  const list = away.slice(0, 4).concat(here).slice(0, 7);
+  dialog({ name: n.t, role: 'Golden threads', pal: notePal(n), pages: ['Where shall the thread take you? ' + (nb.length > list.length ? 'Here are ' + list.length + ' of my ' + nb.length + '.' : '')],
+    choices: list.map(m => ({ label: clip(m.t, 46) + (m.w !== n.w ? ' → ' + WBY[m.w].name : ''), fn: chain(() => travelTo(m, true)) })).concat([{ label: 'Stay', fn: closeDialog, secondary: true }]) });
+}
+function kinCandidates(n) {
+  const scored = [];
+  for (const m of NOTES) {
+    if (m === n) continue;
+    let s = 0, why = [];
+    const tags = [...n._g].filter(g => m._g.has(g) && !/^(sapientia|wing|note|concept|clippings|inbox|processing)/.test(g)); if (tags.length) { s += 3 * tags.length; why.push('shared tags: ' + tags.slice(0, 3).join(', ')); }
+    const tw = [...n._t].filter(x => m._t.has(x)); if (tw.length) { s += 2.5 * tw.length; why.push('title words: ' + tw.slice(0, 3).join(', ')); }
+    let sw = 0; for (const x of n._s) if (m._s.has(x)) sw++; s += .35 * sw;
+    if (m.c === n.c && m.w === n.w) s += 1; else if (m.w === n.w) s += .5;
+    if (s > 1.5) scored.push({ m, s, why: why.join('; ') || 'similar summaries' });
+  }
+  return scored.sort((a, b) => b.s - a.s).slice(0, 4);
+}
+function talkRuin(n) {
+  const prop = S.proposals.filter(x => x.a === n.p || x.b === n.p);
+  const pages = pagesFrom(n.s || ('This was the house of ' + n.t + '.'), 260);
+  if (prop.length) {
+    pages.push('Scaffolding stands here. You proposed: ' + prop.map(x => BYPATH[x.a === n.p ? x.b : x.a] ? BYPATH[x.a === n.p ? x.b : x.a].t : '?').join(', ') + '. ' + (prop.some(x => x.filed) ? 'It has been filed to the Inbox.' : 'It waits in your satchel.'));
+    return dialog({ name: n.t, role: citizenRole(n) + ' · restoring', pal: notePal(n), pages, ask: { title: n.t, wing: WBY[n.w].name, note: n.x || n.s, nb: '' }, choices: [{ label: 'Propose another kin', fn: chain(() => proposeKin(n)) }, { label: 'Leave', fn: closeDialog, secondary: true }] });
+  }
+  pages.push('No thread reaches my house, so it crumbles. Which citizen is my kin?');
+  dialog({ name: n.t, role: citizenRole(n) + ' · ruin', pal: GREY, pages, ask: { title: n.t, wing: WBY[n.w].name, note: n.x || n.s, nb: '' },
+    choices: [{ label: 'Propose a kin', fn: chain(() => proposeKin(n)) }, { label: 'Leave', fn: closeDialog, secondary: true }] });
+}
+function proposeKin(n) {
+  const cands = kinCandidates(n);
+  if (!cands.length) return dialog({ name: n.t, role: 'Proposal', pal: GREY, pages: ['I can find no likely kin among the ' + NOTES.length + ' citizens. Perhaps research at the Observatory terminal would help.'] });
+  dialog({ name: n.t, role: 'Proposal', pal: GREY, pages: ['These citizens may share an idea with me. Choose the one you would link, or leave if none fits.'],
+    choices: cands.map(c => ({ label: clip(c.m.t, 44) + ' · ' + WBY[c.m.w].name, fn: chain(() => makeProposal(n, c.m, c.why)) })).concat([{ label: 'None of these', fn: closeDialog, secondary: true }]) });
+}
+function makeProposal(n, m, why) {
+  if (S.proposals.some(x => !x.filed && ((x.a === n.p && x.b === m.p) || (x.a === m.p && x.b === n.p)))) { toast('That link is already in your satchel.'); return; }
+  const rec = { a: n.p, b: m.p, why: 'Suggested by ' + why + '.', at: today(), filed: false };
+  S.proposals.push(rec); gain(20, 0); refreshScene();
+  toast('Link proposed: ' + clip(n.t, 30) + ' ↔ ' + clip(m.t, 30) + '. Scaffolding goes up.', true);
+  if (aiOn()) {
+    ai.json('Two notes in a personal knowledge library may deserve a link.\nNOTE A: "' + n.t + '": ' + clip(n.s, 400) + '\nNOTE B: "' + m.t + '": ' + clip(m.s, 400) + '\nIn at most 25 words, state the strongest genuine connection, or say it is weak. Reply with only JSON: {"reason": "...", "strength": "strong|plausible|weak"}', { modelTier: 'quick' })
+      .then(v => { if (v && v.reason) { rec.why = String(v.reason).slice(0, 220) + ' (' + (['strong', 'plausible', 'weak'].includes(v.strength) ? v.strength : 'unrated') + ', judged by Claude)'; save(); } })
+      .catch(aiFail);
+  }
+}
+
+/* ---------- Tents (research visitors) ---------- */
+function talkTent(r) {
+  const pages = [r.greeting || ('I am ' + r.name + ', a visitor with a note on ' + r.title + '.'), ...pagesFrom(r.summary, 260)];
+  for (const f of r.facts.slice(0, 3)) pages.push(f);
+  pages.push('I wait for Processing. The Scribe will file me to the Inbox' + (r.dest ? ', with a recommendation for the ' + r.dest : '') + '.');
+  dialog({ name: r.title, role: 'Visitor · unprocessed research', pal: TENT_PAL, pages });
+}
+
+/* ---------- Scribe & export ---------- */
+function talkScribe() {
+  const base = { name: 'The Scribe', role: 'Inbox · entry point to the city', pal: OFFICER_PAL.scribe };
+  const pp = S.proposals.filter(x => !x.filed), rr = S.research.filter(x => !x.filed), vv = S.revisit.filter(x => !x.filed);
+  if (!pp.length && !rr.length && !vv.length) return dialog(Object.assign({}, base, { pages: ['Your satchel is empty. Propose links for ruins, research at the terminal, or test yourself with a custodian, and I will file what you gather.'] }));
+  dialog(Object.assign({}, base, {
+    pages: ['Your satchel holds ' + pp.length + ' proposed link' + (pp.length === 1 ? '' : 's') + ', ' + rr.length + ' research note' + (rr.length === 1 ? '' : 's') + ', and ' + vv.length + ' note' + (vv.length === 1 ? '' : 's') + ' to revisit.', 'I write them into one field report for 99 - Inbox. Nothing in it is checked yet; Processing decides what stays.'],
+    choices: [{ label: dl ? 'Save field report' : 'Show field report', fn: chain(exportReport) }, { label: 'Not yet', fn: closeDialog, secondary: true }]
+  }));
+}
+function buildReport() {
+  const d = today(), pp = S.proposals.filter(x => !x.filed), rr = S.research.filter(x => !x.filed), vv = S.revisit.filter(x => !x.filed);
+  const L = ['---', 'title: Arx Living Library — Field Report ' + d, 'type: note', 'created: ' + d, 'updated: ' + d, 'status: draft', 'tags:', '  - inbox', '  - arx-living-library',
+    'source: Arx Living Library (game), built from vault data of ' + DATA.generated, 'processing_status: unprocessed', '---', '', '# Arx Living Library — Field Report ' + d, '',
+    'Gathered while playing the Arx Living Library. Nothing here is checked. Process it like any other Inbox capture.', ''];
+  if (pp.length) {
+    L.push('## Proposed links (' + pp.length + ')', '');
+    for (const x of pp) { const a = BYPATH[x.a], b = BYPATH[x.b]; L.push('- ' + wikilink(x.a) + ' ↔ ' + wikilink(x.b) + ' — ' + x.why + (a && isRuin(a) ? ' *(' + a.t + ' had no links)*' : '') + (a && b ? ' · ' + WBY[a.w].name + ' / ' + WBY[b.w].name : '')); }
+    L.push('');
+  }
+  if (rr.length) {
+    L.push('## Research notes (' + rr.length + ')', '');
+    for (const r of rr) {
+      L.push('### ' + r.title, '', '```yaml', 'recommended_destination: ' + (r.dest || 'unknown') + (r.chamber ? ' / ' + r.chamber : ''), 'confidence: low', 'source: Claude, via the Observatory terminal, ' + r.at, 'question: "' + String(r.q || '').replace(/"/g, "'") + '"', '```', '', r.summary, '');
+      for (const f of r.facts) L.push('- ' + f);
+      if (r.related && r.related.length) L.push('', 'Possible links: ' + r.related.map(wikilink).join(', '));
+      L.push('');
+    }
+  }
+  if (vv.length) {
+    L.push('## Notes to revisit (' + vv.length + ')', '', 'Notes I failed to recognise in the game. Worth rereading.', '');
+    for (const v of vv) { const n = BYPATH[v.p]; L.push('- [ ] ' + wikilink(v.p) + (n ? ' — ' + WBY[n.w].name + ' / ' + n.c : '')); }
+    L.push('');
+  }
+  return L.join('\n');
+}
+function markFiled() {
+  const d = today();
+  for (const arr of [S.proposals, S.research, S.revisit]) for (const x of arr) if (!x.filed) { x.filed = true; x.filedOn = d; }
+  S.exports++; checkQuest(); save();
+  if (SC.id === 'hub') refreshScene(); else hud();
+  toast('Filed. The report is on its way to 99 - Inbox.', true);
+}
+async function exportReport() {
+  const md = buildReport(), name = 'Arx Living Library — Field Report ' + today() + '.md';
+  if (dl) {
+    try { await dl.save({ filename: name, data: md }); markFiled(); return; }
+    catch (e) { if (e && e.code === 'declined') { toast('Not saved. Your satchel is unchanged.'); return; } }
+  }
+  openExport(md, name);
+}
+function openExport(md, name) {
+  mode = 'export'; $('exportView').hidden = false; $('prompt').hidden = true;
+  $('exportText').value = md; $('xSub').textContent = 'Save this as "' + name + '" in 99 - Inbox, then press "I\'ve filed it".';
+}
+function closeExport() { $('exportView').hidden = true; mode = 'play'; nearEnt = undefined; updatePrompt(); }
+$('xClose').addEventListener('click', closeExport);
+$('xFiled').addEventListener('click', () => { markFiled(); closeExport(); });
+$('xCopy').addEventListener('click', () => {
+  const ta = $('exportText');
+  try { navigator.clipboard.writeText(ta.value).then(() => toast('Copied.'), () => { ta.focus(); ta.select(); toast('Select all and copy.'); }); }
+  catch (e) { ta.focus(); ta.select(); }
+});
+
+/* ---------- Research ---------- */
+let rCtl = null, pendingNote = null;
+function freeSpots() { const used = S.research.filter(r => !r.filed).map(r => r.spot); return TENT_SPOTS.map((s, i) => i).filter(i => !used.includes(i)); }
+function openResearch() {
+  mode = 'research'; $('research').hidden = false; $('prompt').hidden = true; pendingNote = null; $('rOut').innerHTML = ''; $('rStatus').textContent = '';
+  refreshResearchUI();
+  if (!coarse) setTimeout(() => $('rTopic').focus(), 0);
+}
+function refreshResearchUI() {
+  if ($('research').hidden) return;
+  $('rInk').textContent = S.ink; $('rLots').textContent = freeSpots().length;
+  const can = aiOn();
+  $('rTopic').disabled = !can; $('rGo').disabled = !can;
+  if (!can && !$('rStatus').dataset.busy) $('rStatus').textContent = aiDenied ? 'Research needs Claude, which is not available in this view.' : (ai ? '' : 'Research asks Claude. If Claude is unavailable here, the rest of the city still works.');
+}
+function localSearch(q, k) {
+  const qw = new Set(words(q));
+  return NOTES.map(n => { let s = 0; for (const w of qw) { if (n._t.has(w)) s += 3; if (n._g.has(w)) s += 2; if (n._s.has(w)) s += 1; } return { n, s }; })
+    .filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, k).map(x => x.n);
+}
+function previewNote(n) {
+  pendingNote = n;
+  const out = $('rOut');
+  out.innerHTML = '<div class="note-card"><h3></h3><p class="sum"></p><ul></ul><p class="sub dest"></p><p class="sub rel"></p><div class="actions"><button class="btn primary" type="button" id="rBuild"></button></div></div>';
+  out.querySelector('h3').textContent = n.title + ' · ' + n.name;
+  out.querySelector('.sum').textContent = n.summary;
+  const ul = out.querySelector('ul'); for (const f of n.facts) { const li = document.createElement('li'); li.textContent = f; ul.appendChild(li); }
+  out.querySelector('.dest').textContent = 'Recommended home: ' + (n.dest || 'unknown') + (n.chamber ? ' / ' + n.chamber : '');
+  out.querySelector('.rel').textContent = n.related.length ? 'Possible links: ' + n.related.map(p => BYPATH[p].t).join(', ') : 'No links to existing notes proposed.';
+  const bb = $('rBuild'), spots = freeSpots().length;
+  bb.textContent = spots ? (S.ink > 0 ? 'Pitch their tent (1 Ink)' : 'No Ink left') : 'No free tent spots';
+  bb.disabled = !spots || S.ink <= 0;
+  if (S.ink <= 0) $('rStatus').textContent = 'You are out of Ink. Quests, debates and custodian tests earn more.';
+  if (!spots) $('rStatus').textContent = 'Every tent spot is taken. File your satchel with the Scribe to clear them.';
+  bb.addEventListener('click', pitchTent);
+}
+function pitchTent() {
+  const n = pendingNote; if (!n) return;
+  const spots = freeSpots(); if (!spots.length || S.ink <= 0) return;
+  S.research.push(Object.assign({ id: 'r' + Date.now().toString(36), spot: spots[0], at: today(), filed: false }, n));
+  S.ink -= 1; gain(20, 0); refreshScene();
+  toast(n.name + ' pitched a tent in the plaza. Added to your satchel.', true);
+  closeResearch();
+}
+function closeResearch() { if (rCtl) { rCtl.abort(); rCtl = null; } $('research').hidden = true; mode = 'play'; nearEnt = undefined; updatePrompt(); }
+$('rClose').addEventListener('click', closeResearch);
+$('rForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const topic = $('rTopic').value.trim(); if (!topic || !aiOn()) return;
+  if (S.ink <= 0) { $('rStatus').textContent = 'You are out of Ink. Quests, debates and custodian tests earn more.'; return; }
+  if (!freeSpots().length) { $('rStatus').textContent = 'Every tent spot is taken. File your satchel with the Scribe to clear them.'; return; }
+  const cands = localSearch(topic, 30);
+  const prompt = 'You are the research terminal of Sapientia Arx, a personal knowledge city whose districts are: ' + WINGS.map(w => w.name + (w.q ? ' (' + w.q + ')' : '')).join('; ') + '.\n'
+    + 'Write a short, factually careful note on: "' + topic.slice(0, 200) + '".\n'
+    + 'Existing notes that may relate (choose only genuine connections):\n' + (cands.map((n, i) => i + ': ' + n.t + ' [' + WBY[n.w].name + ']').join('\n') || '(none)') + '\n\n'
+    + 'Reply with only one JSON object:\n{"title": "note title, max 50 chars", "name": "a one-word persona name for the visitor who carries this note", "greeting": "one line they say when met, first person, max 25 words", "summary": "2-3 sentences", "facts": ["3 short, accurate facts"], "district": "the one district above whose question this note answers best", "chamber": "a likely chamber inside it, max 3 words", "related": [indexes of related existing notes, max 4]}';
+  $('rGo').disabled = true; $('rStatus').dataset.busy = '1'; $('rStatus').textContent = 'The terminal hums and the stars turn...'; $('rOut').innerHTML = '';
+  rCtl = new AbortController();
+  try {
+    const d = await ai.json(prompt, { signal: rCtl.signal });
+    const dest = WINGS.find(w => w.name === String(d.district || '')) ;
+    const n = {
+      q: topic.slice(0, 200), title: String(d.title || topic).slice(0, 60), name: String(d.name || 'Scholar').split(/\s+/)[0].slice(0, 16),
+      greeting: d.greeting ? String(d.greeting).slice(0, 200) : null, summary: String(d.summary || '').slice(0, 600),
+      facts: Array.isArray(d.facts) ? d.facts.slice(0, 3).map(f => String(f).slice(0, 220)) : [],
+      dest: dest ? dest.name : (d.district ? String(d.district).slice(0, 40) : ''), chamber: d.chamber ? String(d.chamber).slice(0, 40) : '',
+      related: Array.isArray(d.related) ? [...new Set(d.related.map(Number).filter(i => cands[i]).map(i => cands[i].p))].slice(0, 4) : []
+    };
+    if (!n.summary) throw { code: 'invalid_json' };
+    $('rStatus').textContent = 'A new note is ready. Check it, then pitch the tent.';
+    previewNote(n);
+  } catch (err) {
+    $('rStatus').textContent = err && err.code === 'invalid_json' ? 'The answer came out garbled. Try again.' : aiFail(err);
+  } finally { delete $('rStatus').dataset.busy; rCtl = null; if (!$('research').hidden) $('rGo').disabled = !aiOn(); }
+});
+
+/* ---------- Court of Reason: cross-examination ---------- */
+let DB = null;
+const OBJ = ['Hearsay. Who in this city will swear to it?', 'A claim without a witness is a rumour. Name your source.', 'Which note says so? I see no citation.', 'Anyone can recite a sentence. Who taught it to you?'];
+function talkLawyer() {
+  const base = { name: 'The Lawyer', role: 'Court of Reason', pal: OFFICER_PAL.lawyer };
+  if (S.cards.length < 4) return dialog(Object.assign({}, base, { pages: ['I am the Lawyer of the Court of Reason. I test what you claim to know.', 'You hold ' + S.cards.length + ' cards. Come back with at least four: meet more citizens.'] }));
+  dialog(Object.assign({}, base, { pages: ['I will read testimony from your own cards, without its source. You must name the citizen who said it.', 'Three correct witnesses break my composure. Three wrong ones end your credibility, and those notes go in your satchel to revisit.'],
+    choices: [{ label: 'Begin', fn: chain(startDebate) }, { label: 'Not yet', fn: closeDialog, secondary: true }] }));
+}
+function startDebate() {
+  DB = { comp: 100, cred: 100, round: 0, used: [], log: 'The Lawyer straightens his collar.', over: null };
+  mode = 'debate'; $('debate').hidden = false; $('prompt').hidden = true;
+  nextRound();
+}
+function nextRound() {
+  const held = S.cards.filter(p => BYPATH[p]);
+  const fresh = held.filter(p => !DB.used.includes(p));
+  if (!fresh.length) { DB.over = DB.comp <= DB.cred ? 'won' : 'lost'; return renderDebate(); }
+  const ans = BYPATH[pick(fresh)];
+  DB.used.push(ans.p); DB.round++;
+  let others = shuffle(held.filter(p => p !== ans.p)).slice(0, 3).map(p => BYPATH[p]);
+  if (others.length < 3) others = others.concat(shuffle(NOTES.filter(n => n !== ans && !others.includes(n))).slice(0, 3 - others.length));
+  DB.ans = ans; DB.opts = shuffle([ans].concat(others)); DB.obj = pick(OBJ); DB.busy = false;
+  renderDebate();
+  if (aiOn()) {
+    const r = DB.round;
+    ai('You are a sharp but fair courtroom lawyer in a learning game. Testimony: "' + cardText(ans) + '"\nIn one sentence of at most 25 words, raise a pointed, intelligent doubt about this testimony. No preamble.', { modelTier: 'quick' })
+      .then(v => { if (DB && DB.round === r && !DB.over && v && v.text) { DB.obj = v.text.trim().slice(0, 220) + ' Name your witness.'; renderDebate(); } })
+      .catch(aiFail);
+  }
+}
+function renderDebate() {
+  const sh = $('dbSheet');
+  if (DB.over) {
+    const won = DB.over === 'won';
+    sh.innerHTML = '<div class="verdict"><div class="eyebrow">Court of Reason</div><h3></h3><p class="sub"></p><div class="actions"><button class="btn primary" id="dbBack" type="button">Return to the city</button></div></div>';
+    sh.querySelector('h3').textContent = won ? 'Testimony upheld' : 'The court rules against you';
+    sh.querySelector('h3').style.color = won ? 'var(--good)' : 'var(--bad)';
+    sh.querySelector('.sub').textContent = won ? 'The Lawyer concedes: you know where your knowledge lives. +' + (S.debatesWon ? 20 : 60) + ' insight, +2 Ink.' : 'The notes you could not place are in your satchel to revisit. Reread them and come back.';
+    $('dbBack').addEventListener('click', endDebate); if (!coarse) $('dbBack').focus();
+    return;
+  }
+  const n = DB.ans;
+  sh.innerHTML = '<div class="dbt-top">'
+    + '<div class="side"><canvas id="dbL" width="12" height="16"></canvas><div class="who">The Lawyer<div class="bar comp"><i style="width:' + DB.comp + '%"></i></div><small>Composure ' + DB.comp + '</small></div></div>'
+    + '<div class="vs">Round ' + DB.round + '</div>'
+    + '<div class="side you"><canvas id="dbY" width="12" height="16"></canvas><div class="who">You<div class="bar cred"><i style="width:' + DB.cred + '%"></i></div><small>Credibility ' + DB.cred + '</small></div></div></div>'
+    + '<div class="testimony"><span class="badge t-' + cardType(n.ty) + '">' + cardType(n.ty) + ' testimony</span><p></p></div>'
+    + '<div class="objection"><span class="badge" style="color:var(--bad)">Objection</span><p></p></div>'
+    + '<p id="dbLog" aria-live="polite"></p>'
+    + '<div class="hand" id="dbHand"></div>'
+    + '<div class="actions"><button class="btn" id="dbLeave" type="button">Leave the court</button></div>';
+  sh.querySelector('.testimony p').textContent = '"' + cardText(n) + '"';
+  sh.querySelector('.objection p').textContent = DB.obj;
+  $('dbLog').textContent = DB.log;
+  drawPortrait($('dbL'), OFFICER_PAL.lawyer); drawPortrait($('dbY'), PLAYER_PAL);
+  const hand = $('dbHand');
+  for (const m of DB.opts) {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'card'; b.disabled = DB.busy;
+    b.innerHTML = '<span class="src"></span><span class="txt"></span>';
+    b.querySelector('.src').textContent = WBY[m.w].name + ' · ' + m.c;
+    b.querySelector('.txt').textContent = m.t;
+    b.addEventListener('click', () => playCard(m));
+    hand.appendChild(b);
+  }
+  $('dbLeave').addEventListener('click', () => { DB.over = 'lost'; DB.forfeit = true; renderDebate(); });
+}
+function playCard(m) {
+  if (!DB || DB.over || DB.busy) return;
+  const ans = DB.ans;
+  if (m === ans) { DB.comp = Math.max(0, DB.comp - 34); DB.log = 'Correct: ' + ans.t + '. The Lawyer blinks. "' + pick(['Hm. Well sourced.', 'I did not expect that.', 'The court notes your witness.']) + '"'; }
+  else { DB.cred = Math.max(0, DB.cred - 34); addRevisit(ans.p); DB.log = 'Wrong. That was ' + ans.t + ', not ' + m.t + '. "' + pick(['Charming, but mistaken.', 'The court is not persuaded.', 'Know your sources, apprentice.']) + '"'; }
+  if (DB.comp <= 0) DB.over = 'won';
+  else if (DB.cred <= 0) DB.over = 'lost';
+  if (DB.over) return renderDebate();
+  nextRound();
+}
+function endDebate() {
+  const won = DB && DB.over === 'won';
+  $('debate').hidden = true; mode = 'play'; nearEnt = undefined;
+  if (won) { const first = !S.debatesWon; S.debatesWon++; gain(first ? 60 : 20, 2); toast(first ? 'Cross-examination won: +60 insight, +2 Ink' : 'Won again: +20 insight, +2 Ink', true); }
+  else { save(); hud(); }
+  DB = null; updatePrompt();
+}
+
+/* ---------- Journal ---------- */
+let jTab = 'quests';
+function openJournal() { mode = 'journal'; $('journal').hidden = false; $('prompt').hidden = true; renderJournal(); }
+function closeJournal() { $('journal').hidden = true; mode = 'play'; nearEnt = undefined; updatePrompt(); resetArm = false; $('jReset').textContent = 'New game'; }
+$('btnJournal').addEventListener('click', () => { if (mode === 'play') openJournal(); });
+$('jClose').addEventListener('click', closeJournal);
+document.querySelectorAll('.tabs .btn').forEach(b => b.addEventListener('click', () => { jTab = b.dataset.tab; renderJournal(); }));
+$('jSearch').addEventListener('input', () => renderJournal());
+function lampsHtml(n) { return '<span class="lamps">' + '●'.repeat(n) + '<i>' + '●'.repeat(10 - n) + '</i></span>'; }
+function renderJournal() {
+  document.querySelectorAll('.tabs .btn').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === jTab ? 'true' : 'false'));
+  $('jSearchRow').hidden = jTab !== 'atlas';
+  const L = $('jList'); L.innerHTML = ''; L.className = 'jlist';
+  const item = (title, status, cls, body, acts, parent) => {
+    const d = document.createElement('div'); d.className = 'jitem'; d.innerHTML = '<span class="st ' + cls + '"></span><b></b><p></p><div class="acts"></div>';
+    d.querySelector('.st').textContent = status; d.querySelector('b').textContent = title; d.querySelector('p').textContent = body;
+    if (!body) d.querySelector('p').remove();
+    const a = d.querySelector('.acts'); for (const [label, fn] of (acts || [])) { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn small'; b.textContent = label; b.addEventListener('click', fn); a.appendChild(b); }
+    if (!acts || !acts.length) a.remove();
+    (parent || L).appendChild(d); return d;
+  };
+  const go = n => () => { closeJournal(); travelTo(n); };
+  if (jTab === 'quests') {
+    QUESTS.forEach((qd, i) => {
+      if (i < S.q) item(qd.name, 'Complete', 'done', '');
+      else if (i === S.q) item(qd.name, S.qState === 'locked' ? 'Speak with the Great Owl' : (S.qState === 'ready' ? 'Done · return to the Owl' : 'In progress'), 'active', S.qState === 'locked' ? '' : qd.step());
+      else item(qd.name, 'Not yet offered', 'locked', '');
+    });
+    item('The city', 'From your vault', 'locked', NOTES.length + ' notes in ' + WINGS.length + ' districts, ' + DATA.links.length + ' threads. Built ' + DATA.generated + '.');
+  } else if (jTab === 'atlas') {
+    const q = $('jSearch').value.trim().toLowerCase();
+    if (q) {
+      const hits = NOTES.filter(n => n.t.toLowerCase().includes(q) || (n.g || []).some(g => g.toLowerCase().includes(q))).slice(0, 40);
+      if (!hits.length) item('No citizen matches "' + q + '"', '', 'locked', 'Try a shorter word or a tag.');
+      for (const n of hits) item(n.t, WBY[n.w].name + ' · ' + n.c + (ruinState(n) === 'ruin' ? ' · ruin' : ''), ruinState(n) === 'ruin' ? 'bad' : (S.talked[n.p] ? 'done' : 'locked'), clip(n.s, 160), [['Go there', go(n)]]);
+      return;
+    }
+    L.className = 'atlas';
+    for (const w of WINGS) {
+      const lit = wingLit(w.id), r = wingRuins(w.id).length, met = WNOTES[w.id].filter(n => S.talked[n.p]).length;
+      const d = item(w.name, w.q || '', 'active', WNOTES[w.id].length + ' notes · ' + met + ' met · ' + r + ' ruins', [['Enter', () => { closeJournal(); enterScene(w.id, 2.2, 3.6, 'right'); }]]);
+      const l = document.createElement('div'); l.innerHTML = lampsHtml(lit); d.insertBefore(l, d.querySelector('.acts'));
+    }
+    const back = item('Sacred Center', 'What currently matters?', 'active', 'The plaza with the Great Owl, the Inbox, the Court and the terminal.', [['Go there', () => { closeJournal(); enterScene('hub', 21.5, 18.5, 'up'); }]]);
+    const l = document.createElement('div'); l.innerHTML = lampsHtml(cityLit()); back.insertBefore(l, back.querySelector('.acts'));
+  } else if (jTab === 'cards') {
+    if (!S.cards.length) item('No cards yet', '', 'locked', 'Each citizen gives you a card the first time you talk to them.');
+    for (const p of S.cards.slice().reverse()) { const n = BYPATH[p]; if (n) item(n.t, cardType(n.ty) + ' · ' + WBY[n.w].name, 'active', cardText(n), [['Go there', go(n)]]); }
+  } else {
+    const pp = S.proposals.filter(x => !x.filed), rr = S.research.filter(x => !x.filed), vv = S.revisit.filter(x => !x.filed);
+    if (!pp.length && !rr.length && !vv.length) item('Your satchel is empty', '', 'locked', 'Proposed links, research and notes to revisit collect here until the Scribe files them.');
+    for (const x of pp) { const a = BYPATH[x.a], b = BYPATH[x.b]; item((a ? a.t : x.a) + ' ↔ ' + (b ? b.t : x.b), 'Proposed link', 'active', x.why); }
+    for (const r of rr) item(r.title, 'Research · ' + (r.dest || 'unplaced'), 'active', clip(r.summary, 180));
+    for (const v of vv) { const n = BYPATH[v.p]; if (n) item(n.t, 'Revisit · ' + WBY[n.w].name, 'bad', '', [['Go there', go(n)]]); }
+    const filed = S.proposals.filter(x => x.filed).length + S.research.filter(x => x.filed).length;
+    if (S.exports) item('Filed so far', S.exports + ' report' + (S.exports === 1 ? '' : 's'), 'done', filed + ' links and research notes sent to the Inbox.');
+  }
+}
+let resetArm = false;
+$('jReset').addEventListener('click', () => {
+  if (!resetArm) { resetArm = true; $('jReset').textContent = 'Press again to erase progress'; return; }
+  S = freshState(); S.started = true; resetArm = false; $('jReset').textContent = 'New game';
+  closeJournal(); enterScene('hub', S.px, S.py, 'up'); toast('A new steward arrives in Arx.');
+});
+
+/* ---------- Title & boot ---------- */
+setInterval(() => { if (mode === 'play' && SC) { S.px = P.x; S.py = P.y; S.dir = P.dir; save(); } }, 4000);
+function startGame(fresh) {
+  if (fresh) S = freshState();
+  S.started = true;
+  const scene = S.scene === 'hub' || WBY[S.scene] ? S.scene : 'hub';
+  enterScene(scene, S.px, S.py, S.dir || 'up');
+  $('title').hidden = true; $('hud').hidden = false; $('tracker').hidden = false;
+  if (coarse) document.body.classList.add('touch');
+  mode = 'play'; nearEnt = undefined; updatePrompt();
+  if (fresh) setTimeout(() => toast('Welcome to Sapientia Arx. The Great Owl waits by the sundial.', true), 300);
+}
+let newArm = false;
+$('tStart').addEventListener('click', () => startGame(!S.started));
+$('tNew').addEventListener('click', () => { if (!newArm) { newArm = true; $('tNew').textContent = 'Press again to erase progress'; return; } startGame(true); });
+
+async function boot(hot) {
+  resize(); requestAnimationFrame(t => { last = t; frame(t); });
+  try {
+    const res = await fetch('vault-data.json');
+    if (!res.ok) throw new Error(res.status);
+    indexData(await res.json());
+  } catch (e) {
+    $('census').textContent = 'The city\'s records (vault-data.json) could not be loaded. Rebuild them and publish again.';
+    return;
+  }
+  const ruins = NOTES.filter(isRuin).length;
+  $('census').textContent = NOTES.length + ' citizens · ' + WINGS.length + ' districts · ' + DATA.links.length + ' threads · ' + ruins + ' ruins · built ' + DATA.generated;
+  const saved = (hot && hot.S) || load();
+  if (saved) S = saved;
+  $('tStart').disabled = false;
+  if (S.started) { $('tStart').textContent = 'Continue'; $('tNew').hidden = false; }
+  if (hot && hot.S && hot.mode === 'play') startGame(false);
+}
+try { window.claude && window.claude.hot && window.claude.hot.snapshot && window.claude.hot.snapshot(() => ({ S: Object.assign({}, S, { px: P.x, py: P.y, scene: SC ? SC.id : S.scene }), mode: mode === 'title' ? 'title' : 'play' })); } catch (e) {}
+if (window.claude && window.claude.hot && window.claude.hot.ready) window.claude.hot.ready(boot);
+else boot((window.claude && window.claude.hot && window.claude.hot.data) || {});
+if (document.fonts && document.fonts.load) document.fonts.load('600 12px "Pixelify Sans"').catch(() => {});
+})();
+</script>
+
+</body>
+</html>
